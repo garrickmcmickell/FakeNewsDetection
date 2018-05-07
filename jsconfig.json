@@ -1,0 +1,7 @@
+{
+    "typeAcquisition": {
+        "include": [
+            "C:/Users/thelo/node_modules/compromise"
+        ]
+    }
+}

@@ -1,0 +1,45 @@
+1. API call does word and returns data in json format.
+2. sentence.js might need to structure the data by adding it to the class and using fromJSON.
+	- sentiment : Stores overall sentiment of sentence as one word string
+	- sentimentTree: Stores sentiment of each branch in a long string, much like parse
+	- sentimentValue : A numerical representation of the sentiment as a string from 1 - 5, where 0 is very negative and 5 is very positive.
+	- sentimentDistribution : Array that indicates the distribution/percentage of each value in the sentence, collectively adding up to a total of 1.
+
+"(ROOT|sentiment=3|prob=0.526
+  (NP|sentiment=2|prob=0.653
+    (NP|sentiment=2|prob=0.673
+      (NP|sentiment=2|prob=0.992 (NNP|sentiment=2|prob=0.993 Friday) (POS|sentiment=2|prob=0.994 's))
+      (@NP|sentiment=2|prob=0.602 (NN|sentiment=2|prob=0.631 summit) (NN|sentiment=2|prob=0.467 meeting)))
+    (PP|sentiment=2|prob=0.887 (IN|sentiment=2|prob=0.994 between)
+      (NP|sentiment=2|prob=0.593
+        (NP|sentiment=2|prob=0.846 (DT|sentiment=2|prob=0.994 the) (NNS|sentiment=2|prob=0.631 leaders))
+        (PP|sentiment=2|prob=0.692 (IN|sentiment=2|prob=0.993 of)
+          (NP|sentiment=2|prob=0.576 (NNP|sentiment=2|prob=0.923 North)
+            (@NP|sentiment=2|prob=0.593 (CC|sentiment=2|prob=0.996 and)
+              (@NP|sentiment=2|prob=0.850 (NNP|sentiment=2|prob=0.992 South) (NNP|sentiment=2|prob=0.973 Korea))))))))
+  (@S|sentiment=3|prob=0.620
+    (VP|sentiment=3|prob=0.554
+      (@VP|sentiment=3|prob=0.768
+        (@VP|sentiment=3|prob=0.735 (VBD|sentiment=2|prob=0.996 was)
+          (NP|sentiment=3|prob=0.781
+            (NP|sentiment=3|prob=0.849 (DT|sentiment=2|prob=0.990 a)
+              (@NP|sentiment=3|prob=0.829 (NN|sentiment=2|prob=0.951 master) (NN|sentiment=2|prob=0.978 class)))
+            (PP|sentiment=2|prob=0.755 (IN|sentiment=2|prob=0.993 in)
+              (NP|sentiment=2|prob=0.729 (JJ|sentiment=2|prob=0.631 diplomatic) (NN|sentiment=2|prob=0.951 choreography)))))
+        (,|sentiment=2|prob=0.997 ,))
+      (PP|sentiment=1|prob=0.465 (IN|sentiment=2|prob=0.992 with)
+        (NP|sentiment=1|prob=0.458
+          (NP|sentiment=2|prob=0.984 (DT|sentiment=2|prob=0.994 each) (NN|sentiment=2|prob=0.992 scene))
+          (VP|sentiment=1|prob=0.348
+            (@VP|sentiment=2|prob=0.429 (VBN|sentiment=2|prob=0.631 arranged)
+              (PP|sentiment=2|prob=0.613 (IN|sentiment=2|prob=0.992 for)
+                (NP|sentiment=3|prob=0.845 (PRP$|sentiment=2|prob=0.994 its) (NN|sentiment=2|prob=0.983 power))))
+            (SBAR|sentiment=2|prob=0.625 (IN|sentiment=2|prob=0.990 as)
+              (S|sentiment=2|prob=0.727
+                (NP|sentiment=2|prob=0.418
+                  (@NP|sentiment=2|prob=0.887
+                    (NP|sentiment=2|prob=0.976 (JJ|sentiment=2|prob=0.994 political) (NN|sentiment=3|prob=0.930 theater))
+                    (CC|sentiment=2|prob=0.996 and))
+                  (NP|sentiment=3|prob=0.393 broadcast))
+                (VP|sentiment=2|prob=0.994 live)))))))
+    (.|sentiment=2|prob=0.997 .)))"
