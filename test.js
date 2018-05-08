@@ -14,6 +14,7 @@ var paragraph = {}
 
 pipeline.annotate(doc)
   .then(doc => {
+    var arr = []
     for(var i = 0; i < doc.sentences().length; i++) {
       //paragraph['Sentence ' + i] = { 'sentPosWordPosStruct' : '', 'sentPosWordStruct' : '', 'sentPosStruct' : '', 'wordPosStruct' : '', 'sentPosCount' : {} , 'wordPosCount' : {} , 'punctCount' : {}, 'tree' : {} }
       paragraph['Sentence' + i] = {}
@@ -21,19 +22,20 @@ pipeline.annotate(doc)
       //var test = CoreNLP.util.Tree._buildTree(doc.sentence(i).sentimentTree())    
       //paragraph['Sentence ' + i]['tree'] = getNode(tree, tree.rootNode, i)
       //console.log(JSON.stringify(paragraph));
-      var test = format(tree.rootNode)
-      console.log(test)
+      
+      format(tree.rootNode, arr)
+      console.log(arr)
     }
 
-    /*MongoClient.connect(url, function(err, db) {
+    MongoClient.connect(url, function(err, db) {
       if (err) throw err;
       var dbo = db.db("jsAppTest");
-      dbo.collection("textData").insertOne(paragraph, function(err, res) {
+      dbo.collection("textData").insertOne({arr}, function(err, res) {
         if (err) throw err;
         console.log("1 document inserted");
         db.close();
       });
-    });*/
+    });
     //var tree = CoreNLP.util.Tree.fromSentence(doc.sentence(0));
     //console.log(tree.dump());
     //console.log(doc.sentence(0).parse()); 
@@ -42,31 +44,22 @@ pipeline.annotate(doc)
     console.log('err', err);
   });
 
-function format(node) {
+function format(node, arr = []) {
   var currentJson = {}
   currentJson['pos'] = node.pos()
+  arr.push(currentJson)
+
   for(var i = 0; i < node.children().length; i++) {
-    currentJson['child' + i] = format(node.children()[i])
+    currentJson['child' + i] = format(node.children()[i], arr)
     Object.keys(currentJson['child' + i]).reverse().forEach(child =>{
-      if(child !== 'pos') {
-        if(currentJson['child' + i][child] === undefined) {
-          console.log('stop')
-        }
-          
-          //console.log(currentJson['child' + i][child])
-        currentJson['child' + i + child] = currentJson['child' + i][child]//['pos']
-        //currentJson[child] = currentJson['child' + i][child]['pos']
+      if(child !== 'pos' && child !== 'children') {      
+        currentJson['child' + i + child] = currentJson['child' + i][child]       
       }
       else {
-        //if(currentJson['child' + i].length <= 1) {
-          currentJson['child' + i] = currentJson['child' + i]['pos']
-        //}
-      }
-    })
-    
+        currentJson['child' + i] = currentJson['child' + i]['pos']
+      }      
+    })   
   }
-  
-  
   return currentJson
 }
  
