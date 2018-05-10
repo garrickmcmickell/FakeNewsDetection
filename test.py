@@ -6,69 +6,68 @@ import numpy as np
 import matplotlib.pyplot as plt
 from pymongo import MongoClient 
 from sklearn.feature_extraction import DictVectorizer
-from sklearn.feature_selection import SelectPercentile, chi2
-from sklearn import svm
+from sklearn.ensemble import IsolationForest
 
 #Connect to MongoDB
 client = MongoClient(port=27017)
 db = client.jsAppTest
 coll = db.textData
 
-#Query data and format
-query = coll.find({})
-X = []
-for row in query:
-    tempRow = {}
-    for child in row:        
-        if child != u'_id':
-            tempRow[child.encode('ascii', 'ignore')] = row[child]      
-    X.append(tempRow)
+#Query training data and format
+query = db.textData.find({})
+X_train = [{child.encode('ascii', 'ignore'): row[child] for child in row if child != u'_id'} for row in query]
 
-#Fill in empty data
-df = pd.DataFrame(data=X)
-df.fillna(0, inplace=True)
+#Query test data and format
+query = db.fakeNews.find({})
+X_test = [{child.encode('ascii', 'ignore'): row[child] for child in row if child != u'_id'} for row in query]
 
-#Reformat
-for i in range(len(X)):
-    for row in df:
-        tempRow = {}
-        X[i][row] = df[row][i]
+#Fill in empty training data
+df_train = pd.DataFrame(data=X_train)
+df_train.fillna(0, inplace=True)
+
+#Fill in empty test data
+df_test = pd.DataFrame(data=X_test)
+df_test.fillna(0, inplace=True)
+
+dtype_train_dict = {df_train.dtypes.index[i]: df_train.dtypes[i] for i in range(len(df_train.dtypes))}
+dtype_test_dict = {df_test.dtypes.index[i]: df_test.dtypes[i] for i in range(len(df_test.dtypes))}
+dtype_mask = dict(dtype_test_dict, **dtype_train_dict)
+
+#Add missing series to training and test data
+for key in dtype_mask:
+    if key not in dtype_train_dict:
+        df_train[key] = pd.Series(data=np.zeros(df_train.shape[0]), index=np.arange(df_train.shape[0]), name=key, dtype=dtype_mask[key])
+    if key not in dtype_test_dict:
+        df_test[key] = pd.Series(data=np.zeros(df_test.shape[0]), index=np.arange(df_test.shape[0]), name=key, dtype=dtype_mask[key]) 
+
+#Reformat training data
+for i in range(len(X_train)):
+    for row in df_train:
+        X_train[i][row] = df_train[row][i]
+
+#Reformat test data
+for i in range(len(X_test)):
+    for row in df_test:
+        X_test[i][row] = df_test[row][i]
         
 #Vectorize data and extract features
-vec = DictVectorizer()
-X = vec.fit_transform(X).toarray()
-y = np.arange(X.shape[0], dtype=np.int32)
+vec_train = DictVectorizer()
+X_train = vec_train.fit_transform(X_train).toarray()
+        
+#Vectorize data and extract features
+vec_test = DictVectorizer()
+X_test = vec_test.fit_transform(X_test).toarray()
 
-#Select features
-selector = SelectPercentile(chi2, percentile=10)
-selector.fit(X, y)
-
-#SVM classification
-clf = svm.SVC(kernel='linear')
-clf.fit(X, y)
-clf_selected = svm.SVC(kernel='linear')
-clf_selected.fit(selector.transform(X), y)
-
-#Calculate weights
-scores = -np.log10(selector.pvalues_)
-scores /= scores.max()
-svm_weights = (clf.coef_ ** 2).sum(axis=0)
-svm_weights /= svm_weights.max()
-svm_weights_selected = (clf_selected.coef_ ** 2).sum(axis=0)
-svm_weights_selected /= svm_weights_selected.max()
+#Train and test data
+clf = IsolationForest()
+clf.fit(X_train)
+y_pred_train = clf.predict(X_train)
+y_pred_test = clf.predict(X_test)
+y_pred_test_outliers = np.array([X_test[i] for i in range(len(y_pred_test)) if y_pred_test[i] != 1])
 
 #Plot data
-plt.figure(1)
-plt.clf()
-X_indices = np.arange(X.shape[-1])
-plt.bar(X_indices - .45, scores, width=.2, label=r'Univariate score ($-Log(p_{value})$)', color='darkorange', edgecolor='black')
-plt.bar(X_indices - .25, svm_weights, width=.2, label='SVM weight', color='navy', edgecolor='black')
-plt.bar(X_indices[selector.get_support()] - .05, svm_weights_selected, width=.2, label='SVM weights after selection', color='c', edgecolor='black')
-plt.title("Comparing feature selection")
-plt.xlabel('Feature number')
-plt.yticks(())
-plt.axis('tight')
-plt.legend(loc='upper right')
+plt.title("IsolationForest")
+b1 = [plt.scatter(np.arange(X_train.shape[1]), X_train[i], c='blue', s=.5,) for i in range(len(X_train))]
+#b2 = [plt.scatter(np.arange(X_test.shape[1]), X_test[i] + .25, c='green', s=.5,) for i in range(len(X_test))]
+b3 = [plt.scatter(np.arange(y_pred_test_outliers.shape[1]) +.5, y_pred_test_outliers[i], c='red', s=.5,) for i in range(len(y_pred_test_outliers))]
 plt.show()
-
-
