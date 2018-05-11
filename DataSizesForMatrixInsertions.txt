@@ -1,0 +1,36 @@
+Using arrays of 1 and 0:
+TOTAL SIZE
+22.1KB
+AVG. SIZE
+7.4KB
+RESULT: Bad.
+
+Using arrays of booleans:
+TOTAL SIZE
+13.8KB
+AVG. SIZE
+4.6KB
+RESULT: Better. Almost 50% less data to store than original method.
+
+Using Uint8 arrays of 1 and 0:
+TOTAL SIZE
+22.1KB
+AVG. SIZE
+7.4KB
+RESULT: Bad. Same as original.
+
+Using buffer to convert to hex:
+TOTAL SIZE
+1.3KB
+AVG. SIZE
+446B
+RESULT: Really good, but see NOTE. Almost 95% less data to store than original method. 
+NOTE: There appears to be some data loss. Not sure if that's from conversion or processing matrix.
+
+Using buffer to covert to base64:
+TOTAL SIZE
+1.3KB
+AVG. SIZE
+441B
+RESULT: Really good, but see NOTE.
+NOTE: There appears to be some data loss. Not sure if that's from conversion or processing matrix.

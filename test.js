@@ -12,19 +12,19 @@ pipeline.annotate(doc)
   .then(doc => {   
     MongoClient.connect(url, function(err, db) {
       if (err) throw err
-      const dbo = db.db("jsAppTest")    
-      
+      const dbo = db.db("jsAppTest") 
+
       const mats = {}
       for(let i = 0; i < doc.sentences().length; i++) {
         const tree = CoreNLP.default.util.Tree.fromSentence(doc.sentence(i), true)
         mats[i] = convertTreeToMatrix(tree)
-        
+
         dbo.collection("matrix").insertOne( { matrix: mats[i] }, function(err, res) {
           if (err) throw err;
           console.log("1 document inserted")
         })
       }
-      db.close()      
+      db.close() 
     })
   })
   .catch(err => {
@@ -32,22 +32,22 @@ pipeline.annotate(doc)
   })
 
 function convertTreeToMatrix(tree) {  
-  const mat = generateMatrix(tree.rootNode)
-  fillMatrix(mat)
+  const nodeCount = countNodes(tree.rootNode)
+  const mat = generateMatrix(nodeCount)
   fillMatrixNodes(tree.rootNode, mat)
+  shrinkMatrix(mat)
   return mat
 }
 
-function generateMatrix(node, mat = []) {
-  mat.push([])
-  node.children().forEach(child => { generateMatrix(child, mat) })
-  return mat
+function countNodes(node, count = 0) {
+  count++, node.children().forEach(child => { count = countNodes(child, count) })
+  return count
 }
 
-function fillMatrix(mat) {
-  for(let i = 0; i < mat.length; i++)
-    for(let j = 0; j < mat.length; j++) 
-      mat[i].push(false)
+function generateMatrix(count) {
+  const mat = []
+  for(let i = 0; i < count; i++) mat.push(Buffer.alloc(count, 0, 'binary'))
+  return mat
 }
 
 function fillMatrixNodes(node, mat, row = -1) {  
@@ -56,4 +56,15 @@ function fillMatrixNodes(node, mat, row = -1) {
   if(node.parent()) 
     mat[node.index][node.parent().index] = true, mat[node.parent().index][node.index] = true
   return row
+}
+
+function shrinkMatrix(mat){
+  let buffer = ''
+  for(let i = 0; i < mat.length; i++) {
+    for(let j = 0; j < mat.length; j++) {
+      buffer += mat[i][j]
+    }
+    mat[i] = Buffer.from(parseInt(buffer, 2).toString(16), 'hex').toString('hex')
+    buffer = ''
+  }
 }
