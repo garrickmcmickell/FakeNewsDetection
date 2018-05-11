@@ -10,20 +10,22 @@ const doc =  new CoreNLP.default.simple.Document("The summit will be the first f
 
 pipeline.annotate(doc)
   .then(doc => {   
-    const mats = []
-    for(let i = 0; i < doc.sentences().length; i++) {
-      const tree = CoreNLP.default.util.Tree.fromSentence(doc.sentence(i), true)
-      mats.push(convertTreeToMatrix(tree))
-    }
-    /*MongoClient.connect(url, function(err, db) {
+    MongoClient.connect(url, function(err, db) {
       if (err) throw err
-      var dbo = db.db("jsAppTest")
-      dbo.collection("fakeNews").insertMany(mats, function(err, res) {
-        if (err) throw err;
-        console.log("1 document inserted")
-        db.close()
-      })
-    })*/
+      const dbo = db.db("jsAppTest")    
+      
+      const mats = []
+      for(let i = 0; i < doc.sentences().length; i++) {
+        const tree = CoreNLP.default.util.Tree.fromSentence(doc.sentence(i), true)
+        mats.push(convertTreeToMatrix(tree))
+        
+        dbo.collection("matrix").insertOne( mats[i] , function(err, res) {
+          if (err) throw err;
+          console.log("1 document inserted")
+        })
+      }
+      db.close()      
+    })
   })
   .catch(err => {
     console.log('err', err)
@@ -36,16 +38,16 @@ function convertTreeToMatrix(tree) {
   return mat
 }
 
-function generateMatrix(node, mat = []) {
-  mat.push([])
+function generateMatrix(node, mat = {}) {
+  mat[Object.keys(mat).length] = []
   node.children().forEach(child => { generateMatrix(child, mat) })
   return mat
 }
 
 function fillMatrix(mat) {
-  for(let i = 0; i < mat.length; i++) 
-    for(let j = 0; j < mat.length; j++) 
-      mat[i].push(0)
+  for(key in mat)
+    for(key in mat) 
+      mat[key].push(0)
 }
 
 function fillMatrixNodes(node, mat, row = -1) {  
