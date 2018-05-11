@@ -14,12 +14,12 @@ pipeline.annotate(doc)
       if (err) throw err
       const dbo = db.db("jsAppTest")    
       
-      const mats = []
+      const mats = {}
       for(let i = 0; i < doc.sentences().length; i++) {
         const tree = CoreNLP.default.util.Tree.fromSentence(doc.sentence(i), true)
-        mats.push(convertTreeToMatrix(tree))
+        mats[i] = convertTreeToMatrix(tree)
         
-        dbo.collection("matrix").insertOne( mats[i] , function(err, res) {
+        dbo.collection("matrix").insertOne( { matrix: mats[i] }, function(err, res) {
           if (err) throw err;
           console.log("1 document inserted")
         })
@@ -38,22 +38,22 @@ function convertTreeToMatrix(tree) {
   return mat
 }
 
-function generateMatrix(node, mat = {}) {
-  mat[Object.keys(mat).length] = []
+function generateMatrix(node, mat = []) {
+  mat.push([])
   node.children().forEach(child => { generateMatrix(child, mat) })
   return mat
 }
 
 function fillMatrix(mat) {
-  for(key in mat)
-    for(key in mat) 
-      mat[key].push(0)
+  for(let i = 0; i < mat.length; i++)
+    for(let j = 0; j < mat.length; j++) 
+      mat[i].push(false)
 }
 
 function fillMatrixNodes(node, mat, row = -1) {  
   node.index = ++row
   node.children().forEach(child => { row = fillMatrixNodes(child, mat, row)})
   if(node.parent()) 
-    mat[node.index][node.parent().index] = 1, mat[node.parent().index][node.index] = 1
+    mat[node.index][node.parent().index] = true, mat[node.parent().index][node.index] = true
   return row
 }
