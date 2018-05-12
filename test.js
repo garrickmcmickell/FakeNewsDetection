@@ -14,17 +14,27 @@ pipeline.annotate(doc)
       if (err) throw err
       const dbo = db.db("jsAppTest") 
 
+      //console.time('total')
+
       const mats = {}
       for(let i = 0; i < doc.sentences().length; i++) {
+        
+        //console.time('treeTotal' + i)
         const tree = CoreNLP.default.util.Tree.fromSentence(doc.sentence(i), true)
+        //console.timeEnd('treeTotal' + i)
+        
+        //console.time('matTotal' + i)
         mats[i] = convertTreeToMatrix(tree)
+        //console.timeEnd('matTotal' + i)
 
         dbo.collection("matrix").insertOne( { matrix: mats[i] }, function(err, res) {
           if (err) throw err;
-          console.log("1 document inserted")
+          //console.log("1 document inserted")
         })
       }
-      db.close() 
+      db.close()
+      
+      //console.timeEnd('total')
     })
   })
   .catch(err => {
@@ -32,10 +42,23 @@ pipeline.annotate(doc)
   })
 
 function convertTreeToMatrix(tree) {  
+  
+  //console.time('nodeCount')
   const nodeCount = countNodes(tree.rootNode)
+  //console.timeEnd('nodeCount')
+
+  //console.time('generateMatrix')
   const mat = generateMatrix(nodeCount)
+  //console.timeEnd('generateMatrix')
+
+  //console.time('fillMatrixNodes')
   fillMatrixNodes(tree.rootNode, mat)
-  shrinkMatrix(mat)
+  //console.timeEnd('fillMatrixNodes')
+
+  console.time('shrinkMatrix')
+  shrinkMatrix(mat, nodeCount)
+  console.timeEnd('shrinkMatrix')
+
   return mat
 }
 
@@ -46,25 +69,24 @@ function countNodes(node, count = 0) {
 
 function generateMatrix(count) {
   const mat = []
-  for(let i = 0; i < count; i++) mat.push(Buffer.alloc(count, 0, 'binary'))
+  for(let i = 0; i < count; i++) mat.push(Array(count).fill(0))
   return mat
 }
 
 function fillMatrixNodes(node, mat, row = -1) {  
-  node.index = ++row
-  node.children().forEach(child => { row = fillMatrixNodes(child, mat, row)})
-  if(node.parent()) 
-    mat[node.index][node.parent().index] = true, mat[node.parent().index][node.index] = true
+  node.index = ++row, node.children().forEach(child => { row = fillMatrixNodes(child, mat, row)})
+  if(node.parent()) mat[node.index][node.parent().index] = 1, mat[node.parent().index][node.index] = 1
   return row
 }
 
-function shrinkMatrix(mat){
-  let buffer = ''
+function shrinkMatrix(mat, bits) {
+  const bytes = Math.ceil(bits / 8)
   for(let i = 0; i < mat.length; i++) {
-    for(let j = 0; j < mat.length; j++) {
-      buffer += mat[i][j]
-    }
-    mat[i] = Buffer.from(parseInt(buffer, 2).toString(16), 'hex').toString('hex')
-    buffer = ''
+    const buffer = new ArrayBuffer(bytes)
+    const view = new DataView(buffer) 
+    for(let j = 0; j < (bytes * 8) - bits; j++) mat[i].unshift(0)
+    let chunks = mat[i].join('').split(/(.{8})/g).filter(chunk => chunk != '')
+    for(let j = 0; j < bytes; j++) view.setInt8(j, parseInt(chunks[j], 2))
+    mat[i] = Buffer.from(buffer)
   }
 }

@@ -34,3 +34,12 @@ AVG. SIZE
 441B
 RESULT: Really good, but see NOTE.
 NOTE: There appears to be some data loss. Not sure if that's from conversion or processing matrix.
+
+Full binary:
+TOTAL SIZE
+1.3KB
+AVG. SIZE
+435B
+Result: This is the best that I'm going to be able to get without making the matrix array itself
+into binary.
+NOTE: MongoDB always displays binary data in base64.
