@@ -1,5 +1,7 @@
 print(__doc__)
 
+import json
+import codecs
 import sklearn
 import pandas as pd
 import numpy as np
@@ -13,6 +15,10 @@ client = MongoClient(port=27017)
 db = client.jsAppTest
 coll = db.textData
 
+#Query matrix data and format
+query = db.matrix.find({})
+mats = [{int(row): json.loads(codecs.decode(item[key]))[row] for row in json.loads(codecs.decode(item[key]))} for item in query for key in item if key != u'_id']
+                
 #Query training data and format
 query = db.textData.find({})
 X_train = [{child.encode('ascii', 'ignore'): row[child] for child in row if child != u'_id'} for row in query]

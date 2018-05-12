@@ -19,7 +19,8 @@ pipeline.annotate(doc)
         const tree = CoreNLP.default.util.Tree.fromSentence(doc.sentence(i), true)
         mats.push(convertTreeToMatrix(tree))
         
-        dbo.collection("matrix").insertOne( mats[i] , function(err, res) {
+        const buffer = Buffer.from(JSON.stringify(mats[i]))
+        dbo.collection("matrix").insertOne( { matrix: buffer } , function(err, res) {
           if (err) throw err;
           console.log("1 document inserted")
         })

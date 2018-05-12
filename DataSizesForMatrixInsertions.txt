@@ -1,0 +1,52 @@
+Using arrays of 1 and 0:
+TOTAL SIZE
+22.1KB
+AVG. SIZE
+7.4KB
+RESULT: Bad.
+
+Using arrays of booleans:
+TOTAL SIZE
+13.8KB
+AVG. SIZE
+4.6KB
+RESULT: Better. Almost 50% less data to store than original method.
+
+Using Uint8 arrays of 1 and 0:
+TOTAL SIZE
+22.1KB
+AVG. SIZE
+7.4KB
+RESULT: Bad. Same as original.
+
+Using buffer to convert to hex:
+TOTAL SIZE
+1.3KB
+AVG. SIZE
+446B
+RESULT: Really good, but see NOTE. Almost 95% less data to store than original method. 
+NOTE: There appears to be some data loss. Not sure if that's from conversion or processing matrix.
+
+Using buffer to covert to base64:
+TOTAL SIZE
+1.3KB
+AVG. SIZE
+441B
+RESULT: Really good, but see NOTE.
+NOTE: There appears to be some data loss. Not sure if that's from conversion or processing matrix.
+
+Full binary:
+TOTAL SIZE
+1.3KB
+AVG. SIZE
+435B
+Result: This is the best that I'm going to be able to get without making the matrix array itself
+into binary.
+NOTE: MongoDB always displays binary data in base64.
+
+Parsing JSON to binary:
+TOTAL SIZE
+6.2KB
+AVG. SIZE
+2.1KB
+Result: About 75% of the original size, yet likely more useable than small types.
