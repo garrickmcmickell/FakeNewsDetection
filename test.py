@@ -1,6 +1,7 @@
 print(__doc__)
 
-import binascii
+import json
+import codecs
 import sklearn
 import pandas as pd
 import numpy as np
@@ -16,8 +17,8 @@ coll = db.textData
 
 #Query matrix data and format
 query = db.matrix.find({})
-mats = [["{0:b}".format(int(binascii.hexlify(row), 16))  for row in item[key]] for item in query for key in item if key != u'_id']
-
+mats = [{int(row): json.loads(codecs.decode(item[key]))[row] for row in json.loads(codecs.decode(item[key]))} for item in query for key in item if key != u'_id']
+                
 #Query training data and format
 query = db.textData.find({})
 X_train = [{child.encode('ascii', 'ignore'): row[child] for child in row if child != u'_id'} for row in query]

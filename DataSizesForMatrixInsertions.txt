@@ -43,3 +43,10 @@ AVG. SIZE
 Result: This is the best that I'm going to be able to get without making the matrix array itself
 into binary.
 NOTE: MongoDB always displays binary data in base64.
+
+Parsing JSON to binary:
+TOTAL SIZE
+6.2KB
+AVG. SIZE
+2.1KB
+Result: About 75% of the original size, yet likely more useable than small types.
