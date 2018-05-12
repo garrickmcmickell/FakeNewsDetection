@@ -1,5 +1,6 @@
 print(__doc__)
 
+import binascii
 import sklearn
 import pandas as pd
 import numpy as np
@@ -12,6 +13,10 @@ from sklearn.ensemble import IsolationForest
 client = MongoClient(port=27017)
 db = client.jsAppTest
 coll = db.textData
+
+#Query matrix data and format
+query = db.matrix.find({})
+mats = [["{0:b}".format(int(binascii.hexlify(row), 16))  for row in item[key]] for item in query for key in item if key != u'_id']
 
 #Query training data and format
 query = db.textData.find({})

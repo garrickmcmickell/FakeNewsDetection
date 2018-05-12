@@ -55,9 +55,9 @@ function convertTreeToMatrix(tree) {
   fillMatrixNodes(tree.rootNode, mat)
   //console.timeEnd('fillMatrixNodes')
 
-  console.time('shrinkMatrix')
+  //console.time('shrinkMatrix')
   shrinkMatrix(mat, nodeCount)
-  console.timeEnd('shrinkMatrix')
+  //console.timeEnd('shrinkMatrix')
 
   return mat
 }
