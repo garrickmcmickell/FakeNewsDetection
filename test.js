@@ -6,11 +6,17 @@ const props = new CoreNLP.Properties({ annotators: 'tokenize,ssplit,pos,parse' }
 const pipeline = new CoreNLP.Pipeline(props, 'English') 
 const url = "mongodb://localhost:27017/"
 
-const doc =  new CoreNLP.default.simple.Document("The summit will be the first face-to-face meeting between a sitting American president and the North Korean leader. Releasing the hostages removed a significant obstacle for Mr. Trump as he heads into the peace talks. A senior United States official said their release was an American condition to the talks.")
+const doc =  new CoreNLP.default.simple.Document("The summit will be the first face-to-face meeting between a sitting American president and the North Korean leader.")
 
 pipeline.annotate(doc)
-  .then(doc => {   
-    MongoClient.connect(url, function(err, db) {
+  .then(doc => {
+    for(let i = 0; i < doc.sentences().length; i++) {
+      const tree = CoreNLP.default.util.Tree.fromSentence(doc.sentence(i))
+      console.log(doc.sentences(i).parse())
+      
+
+    }
+    /*MongoClient.connect(url, function(err, db) {
       if (err) throw err
       const dbo = db.db("jsAppTest")    
       
@@ -26,7 +32,7 @@ pipeline.annotate(doc)
         })
       }
       db.close()      
-    })
+    })*/
   })
   .catch(err => {
     console.log('err', err)
