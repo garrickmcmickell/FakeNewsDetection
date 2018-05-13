@@ -1,3 +1,0 @@
-1. Go to coreNLP main dir in project via PowerShell.
-2. Execute in PowerShell to start server:
-java -mx4g -cp "*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer -port 9000 -timeout 15000
