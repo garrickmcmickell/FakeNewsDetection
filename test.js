@@ -1,4 +1,4 @@
-
+const fs = require('fs')
 const CoreNLP = require('corenlp')
 const MongoClient = require('mongodb').MongoClient
 
@@ -6,61 +6,51 @@ const props = new CoreNLP.Properties({ annotators: 'tokenize,ssplit,pos,parse' }
 const pipeline = new CoreNLP.Pipeline(props, 'English') 
 const url = "mongodb://localhost:27017/"
 
-const doc =  new CoreNLP.default.simple.Document("The summit will be the first face-to-face meeting between a sitting American president and the North Korean leader.")
+const text = fs.readFileSync('./sampleSentences.txt', 'utf8')
+
+const doc =  new CoreNLP.default.simple.Document(text)
 
 pipeline.annotate(doc)
   .then(doc => {
-    for(let i = 0; i < doc.sentences().length; i++) {
-      const tree = CoreNLP.default.util.Tree.fromSentence(doc.sentence(i))
-      console.log(doc.sentences(i).parse())
-      
-
-    }
-    /*MongoClient.connect(url, function(err, db) {
+    /*for(let i = 0; i < doc.sentences().length; i++) {
+      const tree = CoreNLP.default.util.Tree.fromSentence(doc.sentence(i), true)
+      //console.log(doc.sentences(i).parse())
+      var mat =  AdjacencyMatrix.convertTreeToMatrix(tree);
+      const rows = {id: [], pos: [], parent: []}
+      generateRows(tree.rootNode, rows)
+      console.log('doc.sentences(i).parse()')*/
+    
+    MongoClient.connect(url, function(err, db) {
       if (err) throw err
       const dbo = db.db("jsAppTest")    
       
-      const mats = []
       for(let i = 0; i < doc.sentences().length; i++) {
+        let rows = { id: [], pos: [], parent: [] }
         const tree = CoreNLP.default.util.Tree.fromSentence(doc.sentence(i), true)
-        mats.push(convertTreeToMatrix(tree))
+
+        generateRows(tree.rootNode, rows)
         
-        const buffer = Buffer.from(JSON.stringify(mats[i]))
-        dbo.collection("matrix").insertOne( { matrix: buffer } , function(err, res) {
+        dbo.collection("fakeRows").insertOne( rows , function(err, res) {
           if (err) throw err;
           console.log("1 document inserted")
         })
       }
       db.close()      
-    })*/
+    })
   })
   .catch(err => {
     console.log('err', err)
   })
 
-function convertTreeToMatrix(tree) {  
-  const mat = generateMatrix(tree.rootNode)
-  fillMatrix(mat)
-  fillMatrixNodes(tree.rootNode, mat)
-  return mat
-}
+  function generateRows(node, rows, index = 1){
+    node.index = index++
+    rows['id'].push(node.index)
+    rows['pos'].push(node.pos())
+    if(node.parent()) rows['parent'].push(node.parent().index)
+    else rows['parent'].push(0)
+    
+    node.children().forEach(child => { index = generateRows(child, rows, index)})
+    return index
+  }
 
-function generateMatrix(node, mat = {}) {
-  mat[Object.keys(mat).length] = []
-  node.children().forEach(child => { generateMatrix(child, mat) })
-  return mat
-}
 
-function fillMatrix(mat) {
-  for(key in mat)
-    for(key in mat) 
-      mat[key].push(0)
-}
-
-function fillMatrixNodes(node, mat, row = -1) {  
-  node.index = ++row
-  node.children().forEach(child => { row = fillMatrixNodes(child, mat, row)})
-  if(node.parent()) 
-    mat[node.index][node.parent().index] = 1, mat[node.parent().index][node.index] = 1
-  return row
-}
