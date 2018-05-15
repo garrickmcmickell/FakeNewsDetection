@@ -6,7 +6,8 @@ const props = new CoreNLP.Properties({ annotators: 'tokenize,ssplit,pos,parse' }
 const pipeline = new CoreNLP.Pipeline(props, 'English') 
 const url = "mongodb://localhost:27017/"
 
-const text = fs.readFileSync('./sampleSentences.txt', 'utf8')
+const text = fs.readFileSync('./sampleSentencesFake.txt', 'utf8')
+//const text = "This is my sample sentence, which is short."
 
 const doc =  new CoreNLP.default.simple.Document(text)
 
@@ -25,12 +26,12 @@ pipeline.annotate(doc)
       const dbo = db.db("jsAppTest")    
       
       for(let i = 0; i < doc.sentences().length; i++) {
-        let rows = { id: [], pos: [], parent: [] }
+        let obj = {}
         const tree = CoreNLP.default.util.Tree.fromSentence(doc.sentence(i), true)
 
-        generateRows(tree.rootNode, rows)
+        test(tree.rootNode, obj)
         
-        dbo.collection("fakeRows").insertOne( rows , function(err, res) {
+        dbo.collection("struct2test").insertOne( obj , function(err, res) {
           if (err) throw err;
           console.log("1 document inserted")
         })
@@ -41,6 +42,39 @@ pipeline.annotate(doc)
   .catch(err => {
     console.log('err', err)
   })
+
+  function test(node, obj = {}) {
+    var arr = []    
+
+    for(let i = 0; i < node.children().length; i++) {
+      var temp = test(node.children()[i], obj)
+      temp.forEach(value => { arr.push(value) })
+    }
+    
+    let offset = 0
+    for(let i = arr.length - 1; i >= 0; i--, offset++) {
+      arr.unshift(node.pos() + arr[i + offset])
+      obj[arr[0]] = obj.hasOwnProperty(arr[0]) ? obj[arr[0]] + 1 : 1
+      arr.pop()
+    }
+
+    arr.push(node.pos())
+    obj[node.pos()] = obj.hasOwnProperty(node.pos()) ? obj[node.pos()] + 1 : 1
+    return arr
+  }
+
+  function getCounts(node, obj = {}) {
+    //Deep first
+    node.children().forEach(child => { obj = getCounts(child, obj)})
+    
+    //Add terminality of node
+    if(node.children().length) obj['nonterminal'] = obj.hasOwnProperty('nonterminal') ? obj['nonterminal'] + 1 : 1      
+    else obj['terminal'] = obj.hasOwnProperty('terminal') ? obj['terminal'] + 1 : 1
+
+    //Add pos 
+
+    return obj
+  }
 
   function generateRows(node, rows, index = 1){
     node.index = index++
@@ -53,4 +87,7 @@ pipeline.annotate(doc)
     return index
   }
 
+  function method(a, b) {
+    return a > b ? a + b : a - b
+  }
 

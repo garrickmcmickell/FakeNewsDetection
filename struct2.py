@@ -15,11 +15,11 @@ client = MongoClient(port=27017)
 db = client.jsAppTest
                 
 #Query training data and format
-query = db.textData.find({})
+query = db.struct2train.find({})
 X_train = [{child.encode('ascii', 'ignore'): row[child] for child in row if child != u'_id'} for row in query]
 
 #Query test data and format
-query = db.fakeNews.find({})
+query = db.struct2test.find({})
 X_test = [{child.encode('ascii', 'ignore'): row[child] for child in row if child != u'_id'} for row in query]
 
 #Fill in empty training data
@@ -72,3 +72,5 @@ b1 = [plt.scatter(np.arange(X_train.shape[1]), X_train[i], c='blue', s=.5,) for 
 b2 = [plt.scatter(np.arange(X_test.shape[1]), X_test[i] + .25, c='green', s=.5,) for i in range(len(X_test))]
 b3 = [plt.scatter(np.arange(y_pred_test_outliers.shape[1]) +.5, y_pred_test_outliers[i], c='red', s=.5,) for i in range(len(y_pred_test_outliers))]
 plt.show()
+
+print ''
