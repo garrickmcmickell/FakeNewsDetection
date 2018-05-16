@@ -6,35 +6,27 @@ const props = new CoreNLP.Properties({ annotators: 'tokenize,ssplit,pos,parse' }
 const pipeline = new CoreNLP.Pipeline(props, 'English') 
 const url = "mongodb://localhost:27017/"
 
-const text = fs.readFileSync('./sampleSentencesFake.txt', 'utf8')
-//const text = "This is my sample sentence, which is short."
+const train =  new CoreNLP.default.simple.Document(fs.readFileSync('./sampleSentencesReal.txt', 'utf8'))
+const test =  new CoreNLP.default.simple.Document(fs.readFileSync('./sampleSentencesFake.txt', 'utf8'))
 
-const doc =  new CoreNLP.default.simple.Document(text)
-
-pipeline.annotate(doc)
+pipeline.annotate(test)
   .then(doc => {
-    /*for(let i = 0; i < doc.sentences().length; i++) {
-      const tree = CoreNLP.default.util.Tree.fromSentence(doc.sentence(i), true)
-      //console.log(doc.sentences(i).parse())
-      var mat =  AdjacencyMatrix.convertTreeToMatrix(tree);
-      const rows = {id: [], pos: [], parent: []}
-      generateRows(tree.rootNode, rows)
-      console.log('doc.sentences(i).parse()')*/
-    
     MongoClient.connect(url, function(err, db) {
       if (err) throw err
       const dbo = db.db("jsAppTest")    
       
       for(let i = 0; i < doc.sentences().length; i++) {
-        let obj = {}
+        let arr = []
         const tree = CoreNLP.default.util.Tree.fromSentence(doc.sentence(i), true)
 
-        test(tree.rootNode, obj)
+        getPositions(tree.rootNode, arr)
         
-        dbo.collection("struct2test").insertOne( obj , function(err, res) {
-          if (err) throw err;
-          console.log("1 document inserted")
-        })
+        arr.forEach(element => {
+          dbo.collection("test").insertOne( element , function(err, res) {
+            if (err) throw err;
+            console.log("1 document inserted")
+          })
+        })        
       }
       db.close()      
     })
@@ -43,51 +35,21 @@ pipeline.annotate(doc)
     console.log('err', err)
   })
 
-  function test(node, obj = {}) {
-    var arr = []    
+  function getPositions(node, arr = [], index = {row: 0, rows: [{x: 0, y: 0}]}) {  
+    if(index['rows'].length <= index['row']) 
+      index['rows'].push({x: index['row'], y: index['rows'][index['row'] - 1]['y']})
 
-    for(let i = 0; i < node.children().length; i++) {
-      var temp = test(node.children()[i], obj)
-      temp.forEach(value => { arr.push(value) })
-    }
-    
-    let offset = 0
-    for(let i = arr.length - 1; i >= 0; i--, offset++) {
-      arr.unshift(node.pos() + arr[i + offset])
-      obj[arr[0]] = obj.hasOwnProperty(arr[0]) ? obj[arr[0]] + 1 : 1
-      arr.pop()
-    }
+    arr.push({pos: node.pos(), x: index['row'], y: index['rows'][index['row']]['y']})
 
-    arr.push(node.pos())
-    obj[node.pos()] = obj.hasOwnProperty(node.pos()) ? obj[node.pos()] + 1 : 1
-    return arr
-  }
+    index['row']++
+    node.children().forEach(child => {
+      index = getPositions(child, arr, index)
+      index['rows'][index['row']]['y'] += 1
+    })
 
-  function getCounts(node, obj = {}) {
-    //Deep first
-    node.children().forEach(child => { obj = getCounts(child, obj)})
-    
-    //Add terminality of node
-    if(node.children().length) obj['nonterminal'] = obj.hasOwnProperty('nonterminal') ? obj['nonterminal'] + 1 : 1      
-    else obj['terminal'] = obj.hasOwnProperty('terminal') ? obj['terminal'] + 1 : 1
+    index['row']--
 
-    //Add pos 
-
-    return obj
-  }
-
-  function generateRows(node, rows, index = 1){
-    node.index = index++
-    rows['id'].push(node.index)
-    rows['pos'].push(node.pos())
-    if(node.parent()) rows['parent'].push(node.parent().index)
-    else rows['parent'].push(0)
-    
-    node.children().forEach(child => { index = generateRows(child, rows, index)})
     return index
   }
 
-  function method(a, b) {
-    return a > b ? a + b : a - b
-  }
 
