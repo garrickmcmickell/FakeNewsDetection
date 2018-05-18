@@ -6,10 +6,14 @@ const props = new CoreNLP.Properties({ annotators: 'tokenize,ssplit,pos,parse' }
 const pipeline = new CoreNLP.Pipeline(props, 'English') 
 const url = "mongodb://localhost:27017/"
 
-const train =  new CoreNLP.default.simple.Document(fs.readFileSync('./sampleSentencesReal.txt', 'utf8'))
-const test =  new CoreNLP.default.simple.Document(fs.readFileSync('./sampleSentencesFake.txt', 'utf8'))
+//const train =  new CoreNLP.default.simple.Document(fs.readFileSync('./sampleSentencesReal.txt', 'utf8'))
+//const train2 =  new CoreNLP.default.simple.Document(fs.readFileSync('./sampleSentencesReal2.txt', 'utf8'))
+//const train3 = new CoreNLP.default.simple.Document(fs.readFileSync('./sampleSentencesReal.txt', 'utf8') + fs.readFileSync('./sampleSentencesReal2.txt', 'utf8'))
+//const test =  new CoreNLP.default.simple.Document(fs.readFileSync('./sampleSentencesFake.txt', 'utf8'))
+//const test2 =  new CoreNLP.default.simple.Document(fs.readFileSync('./sampleSentencesFake2.txt', 'utf8'))
+const text = new CoreNLP.default.simple.Document("This is my sample sentence, which is short.")
 
-pipeline.annotate(test)
+pipeline.annotate(/*train2*/)
   .then(doc => {
     MongoClient.connect(url, function(err, db) {
       if (err) throw err
@@ -22,7 +26,7 @@ pipeline.annotate(test)
         getPositions(tree.rootNode, arr)
         
         arr.forEach(element => {
-          dbo.collection("test").insertOne( element , function(err, res) {
+          dbo.collection(/*"train2"*/).insertOne( element , function(err, res) {
             if (err) throw err;
             console.log("1 document inserted")
           })
