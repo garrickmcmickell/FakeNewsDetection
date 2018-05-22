@@ -6,29 +6,29 @@ const props = new CoreNLP.Properties({ annotators: 'tokenize,ssplit,pos,parse' }
 const pipeline = new CoreNLP.Pipeline(props, 'English') 
 const url = "mongodb://localhost:27017/"
 
-//const train =  new CoreNLP.default.simple.Document(fs.readFileSync('./sampleSentencesReal.txt', 'utf8'))
-//const train2 =  new CoreNLP.default.simple.Document(fs.readFileSync('./sampleSentencesReal2.txt', 'utf8'))
-//const train3 = new CoreNLP.default.simple.Document(fs.readFileSync('./sampleSentencesReal.txt', 'utf8') + fs.readFileSync('./sampleSentencesReal2.txt', 'utf8'))
-//const test =  new CoreNLP.default.simple.Document(fs.readFileSync('./sampleSentencesFake.txt', 'utf8'))
-//const test2 =  new CoreNLP.default.simple.Document(fs.readFileSync('./sampleSentencesFake2.txt', 'utf8'))
-//const test3 = new CoreNLP.default.simple.Document(fs.readFileSync('./sampleSentencesFake.txt', 'utf8') + fs.readFileSync('./sampleSentencesFake2.txt', 'utf8'))
-const text = new CoreNLP.default.simple.Document("This is my sample sentence, which is short.")
+const train =  new CoreNLP.default.simple.Document(fs.readFileSync('./sampleSentencesReal.txt', 'utf8'))
+const train2 =  new CoreNLP.default.simple.Document(fs.readFileSync('./sampleSentencesReal2.txt', 'utf8'))
+const train3 = new CoreNLP.default.simple.Document(fs.readFileSync('./sampleSentencesReal.txt', 'utf8') + fs.readFileSync('./sampleSentencesReal2.txt', 'utf8'))
+const test =  new CoreNLP.default.simple.Document(fs.readFileSync('./sampleSentencesFake.txt', 'utf8'))
+const test2 =  new CoreNLP.default.simple.Document(fs.readFileSync('./sampleSentencesFake2.txt', 'utf8'))
+const test3 = new CoreNLP.default.simple.Document(fs.readFileSync('./sampleSentencesFake.txt', 'utf8') + fs.readFileSync('./sampleSentencesFake2.txt', 'utf8'))
+//const text = new CoreNLP.default.simple.Document("This is my sample sentence, which is short.")
 
-/*const data = {
+const data = {
   train: train,
   train2: train2,
   train3: train3,
   test: test,
   test2: test2,
   test3: test3
-}*/
+}
 
-//Object.keys(data).forEach(key => {
-  pipeline.annotate(text/*data[key]*/)
+Object.keys(data).forEach(key => {
+  pipeline.annotate(data[key]/*data[key]*/)
   .then(doc => {
     MongoClient.connect(url, function(err, db) {
       if (err) throw err
-      const dbo = db.db("dataStructTests"/*"jsAppTest"*/)    
+      const dbo = db.db("phraseChunk"/*"jsAppTest"*/)    
       
       for(let i = 0; i < doc.sentences().length; i++) {
         let arr = []
@@ -38,12 +38,13 @@ const text = new CoreNLP.default.simple.Document("This is my sample sentence, wh
         phraseChainChunker(tree.rootNode, arr)
         phraseChunkerLite(tree.rootNode, obj)
         
-        arr.forEach(element => {
-          dbo.collection("struct2"/*key*/).insertOne( element , function(err, res) {
+        
+        //arr.forEach(element => {
+          dbo.collection(key/*key*/).insertOne( { phraseChunks: arr } , function(err, res) {
             if (err) throw err;
             console.log("1 document inserted")
           })
-        })        
+        //})        
       }
       db.close()      
     })
@@ -51,7 +52,7 @@ const text = new CoreNLP.default.simple.Document("This is my sample sentence, wh
   .catch(err => {
     console.log('err', err)
   })
-//})
+})
   
   //Post-order depth-first search. Passes array of branch strings upwards,
   //starting at the leaf. Nodes construct strings by using current node and
