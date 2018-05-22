@@ -11,11 +11,11 @@ client = MongoClient(port=27017)
 db = client.jsAppTest
 
 #Query training data
-query = db.train3.find({})
+query = db.train2.find({})
 X_train = [[item[key] for key in item if key != u'_id'] for item in query]
 
 #Query test data
-query = db.test2.find({})
+query = db.train.find({})
 X_test = [[item[key] for key in item if key != u'_id'] for item in query]
 
 #Keys are backwards, reverse
