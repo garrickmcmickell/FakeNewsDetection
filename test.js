@@ -6,21 +6,44 @@ const props = new CoreNLP.Properties({ annotators: 'tokenize,ssplit,pos,parse' }
 const pipeline = new CoreNLP.Pipeline(props, 'English') 
 const url = "mongodb://localhost:27017/"
 
-const train =  new CoreNLP.default.simple.Document(fs.readFileSync('./sampleSentencesReal.txt', 'utf8'))
-const train2 =  new CoreNLP.default.simple.Document(fs.readFileSync('./sampleSentencesReal2.txt', 'utf8'))
-const train3 = new CoreNLP.default.simple.Document(fs.readFileSync('./sampleSentencesReal.txt', 'utf8') + fs.readFileSync('./sampleSentencesReal2.txt', 'utf8'))
-const test =  new CoreNLP.default.simple.Document(fs.readFileSync('./sampleSentencesFake.txt', 'utf8'))
-const test2 =  new CoreNLP.default.simple.Document(fs.readFileSync('./sampleSentencesFake2.txt', 'utf8'))
-const test3 = new CoreNLP.default.simple.Document(fs.readFileSync('./sampleSentencesFake.txt', 'utf8') + fs.readFileSync('./sampleSentencesFake2.txt', 'utf8'))
+const train =  new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesReal.txt', 'utf8'))
+const train2 =  new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesReal2.txt', 'utf8'))
+const train3 =  new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesReal3.txt', 'utf8'))
+const train4 =  new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesReal4.txt', 'utf8'))
+const train4p2 =  new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesReal4p2.txt', 'utf8'))
+const train5 =  new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesFake.txt', 'utf8'))
+const train6 =  new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesFake2.txt', 'utf8'))
+const train7 =  new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesFake3.txt', 'utf8'))
+const train7p2 =  new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesFake3p2.txt', 'utf8'))
+const train7p3 =  new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesFake3p3.txt', 'utf8'))
+const train8 =  new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesFake4.txt', 'utf8'))
+const train9 =  new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesFake5.txt', 'utf8'))
+//const train_real = new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesReal.txt', 'utf8') +
+//                                                       fs.readFileSync('./SampleData/sampleSentencesReal2.txt', 'utf8') +
+//                                                       fs.readFileSync('./SampleData/sampleSentencesReal3.txt', 'utf8') +
+//                                                       fs.readFileSync('./SampleData/sampleSentencesReal4.txt', 'utf8'))
+//const train_fake = new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesFake.txt', 'utf8') +
+//                                                       fs.readFileSync('./SampleData/sampleSentencesFake2.txt', 'utf8') +
+//                                                       fs.readFileSync('./SampleData/sampleSentencesFake3.txt', 'utf8') +
+//                                                       fs.readFileSync('./SampleData/sampleSentencesFake4.txt', 'utf8') +
+//                                                       fs.readFileSync('./SampleData/sampleSentencesFake5.txt', 'utf8'))
 //const text = new CoreNLP.default.simple.Document("This is my sample sentence, which is short.")
 
 const data = {
   train: train,
   train2: train2,
   train3: train3,
-  test: test,
-  test2: test2,
-  test3: test3
+  train4: train4,
+  train4p2: train4,
+  train5: train5,
+  train6: train6,
+  train7: train7,
+  train7p2: train7p2,
+  train7p3: train7p3,
+  train8: train8,
+  train9: train9,
+  //train_real: train_real,
+  //train_fake: train_fake
 }
 
 Object.keys(data).forEach(key => {
@@ -38,9 +61,13 @@ Object.keys(data).forEach(key => {
         phraseChainChunker(tree.rootNode, arr)
         phraseChunkerLite(tree.rootNode, obj)
         
-        
+        let coll = ''
+        if (key == 'train4p2') coll = 'train4'
+        else if (key == 'train7p2' || key == 'train7p3') coll = 'train7'
+        else coll = key
+
         //arr.forEach(element => {
-          dbo.collection(key/*key*/).insertOne( { phraseChunks: arr } , function(err, res) {
+          dbo.collection(coll/*key*/).insertOne( { phraseChunks: arr } , function(err, res) {
             if (err) throw err;
             console.log("1 document inserted")
           })

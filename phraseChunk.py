@@ -13,12 +13,16 @@ client = MongoClient(port=27017)
 db = client.phraseChunk
 
 #Query and format training data for real samples
-query = db.train.find({})
-train_real = np.array([np.array([[item[key][i].encode('ascii', 'ignore') for i in range(len(item[key]))], 0]) for item in query for key in item if key != u'_id'])
+train_real = np.array([np.array([[item[key][i].encode('ascii', 'ignore') for i in range(len(item[key]))], 0])
+                      for query in [db['train' + str(i + 1)].find({}) if i != 0 else db.train.find({}) for i in range(4)]
+                      for item in query
+                      for key in item if key != u'_id'])
 
 #Query and format training data for fake samples
-query = db.test.find({})
-train_fake = np.array([np.array([[item[key][i].encode('ascii', 'ignore') for i in range(len(item[key]))], 1]) for item in query for key in item if key != u'_id'])
+train_fake = np.array([np.array([[item[key][i].encode('ascii', 'ignore') for i in range(len(item[key]))], 1])
+                      for query in [db['train' + str(i + 5)].find({}) for i in range(5)]
+                      for item in query
+                      for key in item if key != u'_id'])
 
 #Query and format test data for fake samples
 query = db.test2.find({})
