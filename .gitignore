@@ -103,3 +103,9 @@ SampleData/sampleSentencesReal4p2.txt
 SampleData/sampleSentencesReal3.txt
 SampleData/sampleSentencesFake4.txt
 SampleData/sampleSentencesFake3p2.txt
+testAccuracy.png
+test2Accuracy.png
+test1Accuracy.png
+SampleData/testSentencesReal1.txt
+SampleData/testSentencesFake1.txt
+testingonly.pyc

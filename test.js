@@ -6,48 +6,37 @@ const props = new CoreNLP.Properties({ annotators: 'tokenize,ssplit,pos,parse' }
 const pipeline = new CoreNLP.Pipeline(props, 'English') 
 const url = "mongodb://localhost:27017/"
 
-const train =  new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesReal.txt', 'utf8'))
-const train2 =  new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesReal2.txt', 'utf8'))
-const train3 =  new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesReal3.txt', 'utf8'))
-const train4 =  new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesReal4.txt', 'utf8'))
-const train4p2 =  new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesReal4p2.txt', 'utf8'))
-const train5 =  new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesFake.txt', 'utf8'))
-const train6 =  new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesFake2.txt', 'utf8'))
-const train7 =  new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesFake3.txt', 'utf8'))
-const train7p2 =  new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesFake3p2.txt', 'utf8'))
-const train7p3 =  new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesFake3p3.txt', 'utf8'))
-const train8 =  new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesFake4.txt', 'utf8'))
-const train9 =  new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesFake5.txt', 'utf8'))
-//const train_real = new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesReal.txt', 'utf8') +
-//                                                       fs.readFileSync('./SampleData/sampleSentencesReal2.txt', 'utf8') +
-//                                                       fs.readFileSync('./SampleData/sampleSentencesReal3.txt', 'utf8') +
-//                                                       fs.readFileSync('./SampleData/sampleSentencesReal4.txt', 'utf8'))
-//const train_fake = new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesFake.txt', 'utf8') +
-//                                                       fs.readFileSync('./SampleData/sampleSentencesFake2.txt', 'utf8') +
-//                                                       fs.readFileSync('./SampleData/sampleSentencesFake3.txt', 'utf8') +
-//                                                       fs.readFileSync('./SampleData/sampleSentencesFake4.txt', 'utf8') +
-//                                                       fs.readFileSync('./SampleData/sampleSentencesFake5.txt', 'utf8'))
-//const text = new CoreNLP.default.simple.Document("This is my sample sentence, which is short.")
+//const train =  new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesReal.txt', 'utf8'))
+//const train2 =  new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesReal2.txt', 'utf8'))
+//const train3 =  new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesReal3.txt', 'utf8'))
+//const train4 =  new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesReal4.txt', 'utf8'))
+//const train4p2 =  new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesReal4p2.txt', 'utf8'))
+//const train5 =  new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesFake.txt', 'utf8'))
+//const train6 =  new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesFake2.txt', 'utf8'))
+//const train7 =  new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesFake3.txt', 'utf8'))
+//const train7p2 =  new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesFake3p2.txt', 'utf8'))
+//const train7p3 =  new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesFake3p3.txt', 'utf8'))
+//const train8 =  new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesFake4.txt', 'utf8'))
+//const train9 =  new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesFake5.txt', 'utf8'))
+const text = new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/testSentencesFake1.txt', 'utf8'))
 
-const data = {
-  train: train,
-  train2: train2,
-  train3: train3,
-  train4: train4,
-  train4p2: train4,
-  train5: train5,
-  train6: train6,
-  train7: train7,
-  train7p2: train7p2,
-  train7p3: train7p3,
-  train8: train8,
-  train9: train9,
-  //train_real: train_real,
-  //train_fake: train_fake
-}
+//const data = {
+//  train: train,
+//  train2: train2,
+//  train3: train3,
+//  train4: train4,
+//  train4p2: train4,
+//  train5: train5,
+//  train6: train6,
+//  train7: train7,
+//  train7p2: train7p2,
+//  train7p3: train7p3,
+//  train8: train8,
+//  train9: train9,
+//}
 
-Object.keys(data).forEach(key => {
-  pipeline.annotate(data[key]/*data[key]*/)
+//Object.keys(data).forEach(key => {
+  pipeline.annotate(text/*data[key]*/)
   .then(doc => {
     MongoClient.connect(url, function(err, db) {
       if (err) throw err
@@ -55,19 +44,19 @@ Object.keys(data).forEach(key => {
       
       for(let i = 0; i < doc.sentences().length; i++) {
         let arr = []
-        let obj = {}
+        //let obj = {}
         const tree = CoreNLP.default.util.Tree.fromSentence(doc.sentence(i), true)
 
         phraseChainChunker(tree.rootNode, arr)
-        phraseChunkerLite(tree.rootNode, obj)
+        //phraseChunkerLite(tree.rootNode, obj)
         
-        let coll = ''
-        if (key == 'train4p2') coll = 'train4'
-        else if (key == 'train7p2' || key == 'train7p3') coll = 'train7'
-        else coll = key
+        //let coll = ''
+        //if (key == 'train4p2') coll = 'train4'
+        //else if (key == 'train7p2' || key == 'train7p3') coll = 'train7'
+        //else coll = key
 
         //arr.forEach(element => {
-          dbo.collection(coll/*key*/).insertOne( { phraseChunks: arr } , function(err, res) {
+          dbo.collection('test2'/*key*/).insertOne( { phraseChunks: arr } , function(err, res) {
             if (err) throw err;
             console.log("1 document inserted")
           })
@@ -79,7 +68,7 @@ Object.keys(data).forEach(key => {
   .catch(err => {
     console.log('err', err)
   })
-})
+//})
   
   //Post-order depth-first search. Passes array of branch strings upwards,
   //starting at the leaf. Nodes construct strings by using current node and
