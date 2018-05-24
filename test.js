@@ -1,75 +1,20 @@
-const fs = require('fs')
+const Request = require('request')
 const CoreNLP = require('corenlp')
+const ScrubWeb = require('./scrubWebsite')
 const MongoClient = require('mongodb').MongoClient
 
 const props = new CoreNLP.Properties({ annotators: 'tokenize,ssplit,pos,parse' })
 const pipeline = new CoreNLP.Pipeline(props, 'English') 
 const url = "mongodb://localhost:27017/"
 
-//const train =  new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesReal.txt', 'utf8'))
-//const train2 =  new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesReal2.txt', 'utf8'))
-//const train3 =  new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesReal3.txt', 'utf8'))
-//const train4 =  new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesReal4.txt', 'utf8'))
-//const train4p2 =  new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesReal4p2.txt', 'utf8'))
-//const train5 =  new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesFake.txt', 'utf8'))
-//const train6 =  new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesFake2.txt', 'utf8'))
-//const train7 =  new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesFake3.txt', 'utf8'))
-//const train7p2 =  new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesFake3p2.txt', 'utf8'))
-//const train7p3 =  new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesFake3p3.txt', 'utf8'))
-//const train8 =  new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesFake4.txt', 'utf8'))
-//const train9 =  new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/sampleSentencesFake5.txt', 'utf8'))
-const text = new CoreNLP.default.simple.Document(fs.readFileSync('./SampleData/testSentencesFake1.txt', 'utf8'))
-
-//const data = {
-//  train: train,
-//  train2: train2,
-//  train3: train3,
-//  train4: train4,
-//  train4p2: train4,
-//  train5: train5,
-//  train6: train6,
-//  train7: train7,
-//  train7p2: train7p2,
-//  train7p3: train7p3,
-//  train8: train8,
-//  train9: train9,
-//}
-
-//Object.keys(data).forEach(key => {
-  pipeline.annotate(text/*data[key]*/)
-  .then(doc => {
-    MongoClient.connect(url, function(err, db) {
-      if (err) throw err
-      const dbo = db.db("phraseChunk"/*"jsAppTest"*/)    
-      
-      for(let i = 0; i < doc.sentences().length; i++) {
-        let arr = []
-        //let obj = {}
-        const tree = CoreNLP.default.util.Tree.fromSentence(doc.sentence(i), true)
-
-        phraseChainChunker(tree.rootNode, arr)
-        //phraseChunkerLite(tree.rootNode, obj)
-        
-        //let coll = ''
-        //if (key == 'train4p2') coll = 'train4'
-        //else if (key == 'train7p2' || key == 'train7p3') coll = 'train7'
-        //else coll = key
-
-        //arr.forEach(element => {
-          dbo.collection('test2'/*key*/).insertOne( { phraseChunks: arr } , function(err, res) {
-            if (err) throw err;
-            console.log("1 document inserted")
-          })
-        //})        
-      }
-      db.close()      
-    })
-  })
-  .catch(err => {
-    console.log('err', err)
-  })
-//})
-  
+Request('https://www.cnn.com/2018/05/17/europe/meghan-markle-father-royal-wedding-intl/index.html', function(error, response, body) {
+  console.log('error:', error);
+  console.log('statusCode:', response && response.statusCode);
+  var scrub = new ScrubWeb()
+  body = scrub.scrubTagsWithoutEndTag(body)
+  body = scrub.scrubTagsWithEndTag(body)
+})
+ 
   //Post-order depth-first search. Passes array of branch strings upwards,
   //starting at the leaf. Nodes construct strings by using current node and
   //appening all sub-tree branches in passed array, adding them to beginning
