@@ -1,19 +1,55 @@
+const he = require('he')
 const Request = require('request')
 const CoreNLP = require('corenlp')
-const ScrubWeb = require('./scrubWebsite')
+var TextVersion = require("textversionjs");
 const MongoClient = require('mongodb').MongoClient
 
 const props = new CoreNLP.Properties({ annotators: 'tokenize,ssplit,pos,parse' })
 const pipeline = new CoreNLP.Pipeline(props, 'English') 
 const url = "mongodb://localhost:27017/"
 
-Request('https://www.cnn.com/2018/05/17/europe/meghan-markle-father-royal-wedding-intl/index.html', function(error, response, body) {
+Request('http://www.collective-evolution.com/2016/10/18/15-quotes-on-false-flag-terrorism-the-secret-government-that-will-make-you-rethink-your-patriotism/', function(error, response, body) {
   console.log('error:', error);
   console.log('statusCode:', response && response.statusCode);
-  var scrub = new ScrubWeb()
-  body = scrub.scrubTagsWithoutEndTag(body)
-  body = scrub.scrubTagsWithEndTag(body)
+  var params = {
+    linkProcess: function(href, linkText) {
+      return ' ' + linkText
+    },
+    imgProcess: function(src, alt) {
+      return ''
+    },
+    headingStyle: 'hashify',
+    listStyle: 'linebreak'
+  }
+  var test = TextVersion(body, params)
+  
+  test = test.replace(/<a.*?>(.*?)<\/a>\s?\n?/gmi, (sel, cont) => {
+    if(cont.length) return (cont + '\n')
+    else return '\n'
+  })
+  test = test.replace(/^<h([^a-z]).*?>/gmi, (sel, type) => {
+    return '#'.repeat(parseInt(type)) + ' '
+  })
+  test = test.replace(/<h([^a-z]).*?>/gmi, '')
+  test = test.replace(/<\/h([^a-z]).*?>/gmi, '')
+  
+  const titleCandidates = {}
+  test = test.replace(/^(#+?)\s+(.*?)\s*?\n/gmi, (sel, head, cont) => {
+    titleCandidates[head.length] ?
+      titleCandidates[head.length].push(he.decode(cont)) :
+      titleCandidates[head.length] = [he.decode(cont)]
+    return cont
+  })
+  
+  const lines = []
+  test.match(/.*?\n/gm).forEach(line => {
+    if(line != '\n') lines.push(he.decode(line).trim())
+  })
+
+  console.log()
 })
+
+
  
   //Post-order depth-first search. Passes array of branch strings upwards,
   //starting at the leaf. Nodes construct strings by using current node and

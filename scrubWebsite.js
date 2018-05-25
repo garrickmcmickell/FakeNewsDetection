@@ -1,16 +1,44 @@
 'use strict'
 
+const globalKeys = ['accesskey', 'class', 'contenteditable', 'contextmenu', 'data-', 'dir', 'draggable', 'dropzone', 'hidden', 'id', 'lang', 'spellcheck', 'style', 'tabindex', 'title', 'translate']
+const eventKeys = ['onafterprint', 'onbeforeprint', 'onbeforeunload', 'onerror', 'onhashchange', 'onload', 'onmessage', 'onoffline', 'ononline', 'onpagehide', 'onpageshow', 'onpopstate', 'onresize', 'onstorage', 'onunload']
+
 const dict = {
   tagsWithoutEndTag: ['meta', 'link'],
-  tagsWithEndTag: ['script'],
-  metaKeys: ['charset', 'name', 'content', 'scheme', 'http-equiv', 'itemprop', 'property'],
+  tagsWithEndTag: ['script', 'style'],
+  metaKeys: ['charset', 'content', 'http-equiv','itemprop', 'name', 'property', 'scheme'].concat(globalKeys),
   linkKeys: ['charset', 'crossorigin', 'href', 'hreflang', 'media', 'rel', 'rev', 'sizes', 'target', 'type'],
   scriptKeys: ['src', 'type', 'name']
 }
 
-class ScrubWebsite {  
+class ScrubWebsite {
   constructor() {
+    this._dict = dict
+  }
 
+  scrub(body) {
+    let obj = {}
+    body = this._scrubDOCTYPE(body, obj)
+    body = this._scrubComments(body, obj)
+    console.log()
+  }
+
+  static _scrubDOCTYPE(body, obj) {
+    let regex = new RegExp('(?:<!DOCTYPE )([^>\s]*)(?:\s?)([^>]*)(?:\/?>)', 'gmsi')
+    body = body.replace(regex, function(sel, type, cont) {
+      obj['DOCTYPE'] = cont.length ? { type: type, content: cont } : { type: type }
+      return ''
+    })
+    return body
+  }
+
+  static _scrubComments(body, obj) {
+    let regex = new RegExp('(?:<!--)(.*?)(?:-->)', 'gmsi')
+    body = body.replace(regex, function(sel, cont) {
+      obj['commentData'] ? obj['commentData'].push(cont) : obj['commentData'] = [cont]
+      return ''
+    })
+    return body    
   }
 
   //Check body for all tags that don't have a separate end tag using dict
@@ -20,9 +48,9 @@ class ScrubWebsite {
   //push the property dict onto the array at that key. If it doesn't have the
   //key, create it with the value being an array containing the property dict.
   //After data is saved to obj, remove the found tag from the document body.
-  scrubTagsWithoutEndTag(body, obj = this) { 
+  _scrubTagsWithoutEndTag(body, obj) { 
     dict.tagsWithoutEndTag.forEach(tag => {
-      let regex = new RegExp('(?:<' + tag + ' )([^>]*)(?:\/?>)', 'gmsi')
+      let regex = new RegExp('(?:<' + tag + ' )([^>]*)(?:\/?>)', 'gmsi') //(?:<tag )([^>]*)(?:\/?>)
       body = body.replace(regex, function(sel, prop) {
         let props = {}
         dict[tag + 'Keys'].forEach(key => {
@@ -33,7 +61,6 @@ class ScrubWebsite {
         return ''
       })
     })
-    return body
   }
 
   //Works like scrubTagsWithoutEndTag, but uses dict values for tagsWithEndTag.
@@ -41,9 +68,9 @@ class ScrubWebsite {
   //content betweeen them. Saves properties of tags like scrubTagsWithoutEndTag,
   //but adds the content between the opening and closing tag as a property in
   //the properties dict. Saves data to obj. Removes found tag from document body.
-  scrubTagsWithEndTag(body, obj = this) {
+  _scrubTagsWithEndTag(body, obj) {
     dict.tagsWithEndTag.forEach(tag => {
-      let regex = new RegExp('(?:<' + tag + '\s?([^>]*)>)(.*?)(?:<\/' + tag + '>)', 'gmsi') //(?:<script\s?([^>]*)>)(.*?)(?:<\/script>)
+      let regex = new RegExp('(?:<' + tag + '\s?([^>]*)>)(.*?)(?:<\/' + tag + '>)', 'gmsi') //(?:<tag\s?([^>]*)>)(.*?)(?:<\/tag>)
       body = body.replace(regex, function(sel, prop, cont) {
         let props = {}
         if(prop.length) dict[tag + 'Keys'].forEach(key => {
@@ -55,7 +82,7 @@ class ScrubWebsite {
         return ''
       })
     })
-    return body
   }
 }
+ScrubWebsite._dict = dict
 module.exports = ScrubWebsite
