@@ -109,3 +109,4 @@ test1Accuracy.png
 SampleData/testSentencesReal1.txt
 SampleData/testSentencesFake1.txt
 testingonly.pyc
+test/client/README.md
