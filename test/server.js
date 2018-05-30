@@ -12,11 +12,6 @@ const url = "mongodb://localhost:27017/"
 const app = express()
 const port = process.env.PORT || 5000;
 
-app.get('/api/hello', (req, res) => {
-  console.log('test')
-  res.send({ express: 'Hello From Express' });
-});
-
 app.get('/url', (req, res) => {
   console.log('Url API hit')
   const url = 'http://www.collective-evolution.com/2016/10/18/15-quotes-on-false-flag-terrorism-the-secret-government-that-will-make-you-rethink-your-patriotism/'
@@ -25,7 +20,7 @@ app.get('/url', (req, res) => {
       console.log(err)
     }
     console.log('Lines grabbed from URL: ' + result.length)
-    res.send({ lines: result })
+    res.send(result)
   })
   //console.log(linesFromUrl)
   //res.send({ lines: linesFromUrl });
@@ -77,7 +72,7 @@ function getLinesFromUrl(url, callback) {
         if(line != '\n') lines.push(he.decode(line).trim())
       })
     
-      callback(null, lines)
+      callback(null, { titleCandidates: titleCandidates, lines: lines })
     }
   })
 }
