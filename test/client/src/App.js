@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import './App.css';
 
-class Line extends Component {
+class LineRadio extends Component {
   constructor(props) {
     super(props)
     this.state = {line: props.text,
@@ -13,7 +13,6 @@ class Line extends Component {
     this.setState(prevState => ({
       isToggleOn: !prevState.isToggleOn
     }));
-    console.log(this.key)
     this.props.handler('lineSelected', [this.state.line, this.state.isToggleOn])
   }
 
@@ -28,13 +27,29 @@ class Line extends Component {
   }
 }
 
-const LineList = (props) => {
+const LineRadioList = (props) => {
   let i = 0
   return (
     <div>
-      {props.lines.map(line => <Line key={'line' + i++} handler={props.handler} name={props.name} text={line}/>)}
+      {props.lines.map(line => <LineRadio key={'line' + i++} handler={props.handler} name={props.name} text={line}/>)}
     </div>
   )
+}
+
+class ArticleListForm extends Component {
+  handleSubmit = (event) => {
+    event.preventDefault()
+    this.props.handler('linesSelected')
+  }
+
+  render() {
+    return (      
+      <form onSubmit={this.handleSubmit}>
+        <LineRadioList handler={this.props.handler} lines={this.props.lines}/>
+        <button type="submit">Select Lines</button>
+      </form>
+    )
+  }
 }
 
 class TitleListForm extends Component {
@@ -48,7 +63,7 @@ class TitleListForm extends Component {
       return (
         <div key={'divFor' + 'lineList' + value[0]}>        
           <h2>Rank {value[0]}</h2>
-          <LineList key={'lineList' + value[0]} handler={this.props.handler} name='titles' lines={value[1]}/>
+          <LineRadioList key={'lineList' + value[0]} handler={this.props.handler} name='titles' lines={value[1]}/>
         </div>
       )
     })
@@ -82,6 +97,8 @@ class App extends Component {
   constructor(props) {
     super(props)
     this.handler = this.handler.bind(this)
+    this.confirmLines = this.confirmLines.bind(this)
+    this.rejectLines = this.rejectLines.bind(this)
     this.state = {enteredURL: false}
   }
 
@@ -143,11 +160,24 @@ class App extends Component {
         })
       }
     }
-    //if(e === 'urlAccepted') {
-    //  this.setState({
-    //    enteredURL: true
-    //  })
-    //}
+    if(e === 'linesSelected') {
+      this.setState({
+        linesSelected: true
+      })
+    }
+  }
+
+  confirmLines() {
+    this.setState({
+      linesConfirmed: true
+    })
+  }
+
+  rejectLines() {
+    this.setState({
+      linesSelected: false,
+      selectedLines: []
+    })
   }
   
   render() {
@@ -163,22 +193,31 @@ class App extends Component {
           <TitleListForm handler={this.handler} titleCandidates={this.state.titleCandidates}/>
         </div>
       )
-    } else if(!this.setState.linesSelected) {
+    } 
+    else if(!this.state.linesSelected) {
       return (
         <div>
           <h1>{this.state.title}</h1>
-          <LineList handler={this.handler} lines={this.state.lines}/>
+          <ArticleListForm handler={this.handler} lines={this.state.lines}/>
         </div>
       )
     }
-    //if(this.state.enteredURL) {
-    //  return (
-    //    <div>
-    //      <h1>Select lines</h1>
-    //      <LineList lines={this.state.lines}/>
-    //    </div>
-    //  )
-    //}  
+    else if(!this.state.linesConfirmed) {
+      return (
+        <div>
+          <h1>{this.state.title}</h1>
+          {this.state.selectedLines.map(line => <p>{line}</p>)}
+          <h3>Is this right?</h3>
+          <button onClick={this.confirmLines} type='button'>Yes</button>
+          <button onClick={this.rejectLines} type='button'>No</button>
+        </div>
+      )
+    }
+    else {
+      return (
+        <h1>Article accepted</h1>
+      )
+    } 
   }
 }
 
