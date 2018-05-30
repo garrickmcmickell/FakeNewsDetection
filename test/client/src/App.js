@@ -115,7 +115,7 @@ class ArticleListForm extends Component {
     return (      
       <form onSubmit={this.handleSubmit}>
         <LineButtonList handler={this.props.handler} lines={this.props.lines}/>
-        <button type="submit">Select Lines</button>
+        <button type="submit" className='button'>Select Lines</button>
       </form>
     )
   }
@@ -139,7 +139,7 @@ class TitleListForm extends Component {
     return (
       <form onSubmit={this.handleSubmit}>
           {titleList}
-          <button type="Submit">Select Title</button>
+          <button type="Submit" className='button'>Select Title</button>
       </form>
     )
   }
@@ -156,7 +156,7 @@ class UrlForm extends Component {
         <input type="text" 
           ref={(input) => this.url = input}
           placeholder="Enter Url" required/>
-        <button type="submit">Get Text</button>
+        <button type="submit" className='button'>Get Text</button>
       </form>
     )
   }
@@ -300,8 +300,8 @@ class App extends Component {
           <h1>{this.state.title}</h1>
           {this.state.selectedLines.map(line => <p>{line}</p>)}
           <h3>Is this right?</h3>
-          <button onClick={this.confirmLines} type='button'>Yes</button>
-          <button onClick={this.rejectLines} type='button'>No</button>
+          <button onClick={this.confirmLines} type='button' className='button'>Yes</button>
+          <button onClick={this.rejectLines} type='button' className='button'>No</button>
         </div>
       )
     }

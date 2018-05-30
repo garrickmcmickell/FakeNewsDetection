@@ -87,3 +87,21 @@ height: 15px;
 border-radius: 50%;
 background: white;
 }
+
+.button {
+  background-color: white;
+  border: 2px solid #2196F3;
+  border-radius: 5px;
+  padding: 5px;
+  margin-left: 5px;
+  color: #2196F3;
+  font-size: 16px;
+  text-align: center;
+  -webkit-transition-duration: 0.3s;
+   transition-duration: 0.3s;
+}
+
+.button:hover {
+    background-color: #2196F3;
+    color: white;
+}
