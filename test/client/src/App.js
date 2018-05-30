@@ -4,12 +4,13 @@ import './App.css';
 class LineRadio extends Component {
   constructor(props) {
     super(props)
-    this.state = {line: props.text,
-                  name: props.name,
-                  isToggleOn: false}
+    this.state = {
+    	line: props.text,
+      isToggleOn: false
+    }
   }
 
-  handleClick = (event) => {
+  handleChange = (event) => {
     this.setState(prevState => ({
       isToggleOn: !prevState.isToggleOn
     }));
@@ -18,10 +19,11 @@ class LineRadio extends Component {
 
   render() {
     return (
-      <div>
-        <input onClick={this.handleClick} type="radio" id='line' name={this.state.name} value={this.state.line} checked={this.state.isToggleOn}/>
-        <label htmlFor='line'>{this.state.line}</label>
-      </div>
+      <label className="container">
+        {this.state.line}
+        <input onChange={this.handleChange} type="radio" name='radio'/>
+        <span className="checkmark"></span>
+      </label>
     )
   }
 }
@@ -37,7 +39,8 @@ class LineButton extends Component {
         border: '1px solid LightSteelBlue',
         borderRadius: '2px',
         padding: '5px',
-        fontSize: '16px'
+        fontSize: '16px',
+        textAlign: 'left'
     	}
     }
   }
@@ -53,7 +56,8 @@ class LineButton extends Component {
           border: '1px solid LightSteelBlue',
           borderRadius: '2px',
         	padding: '5px',
-        	fontSize: '16px'
+        	fontSize: '16px',
+          textAlign: 'left'
       	}
       })
     }
@@ -64,7 +68,8 @@ class LineButton extends Component {
           border: '1px solid LightSteelBlue',
           borderRadius: '2px',
         	padding: '5px',
-        	fontSize: '16px'
+        	fontSize: '16px',
+          textAlign: 'left'
       	}
       })
     }
