@@ -104,12 +104,12 @@ class App extends Component {
 
   callApi = async (props) => {
     console.log('Api props: ' + props)
-    const response = await fetch('/url');
+    const response = await fetch('/url/' + props);
     const body = await response.json();
     
     console.log(body)
-    console.log('Title candidates scraped from URL: ' + Object.keys(body['titleCandidates']).length)
-    console.log('Lines scraped from URL: ' + body['lines'].length)
+    console.log('Title candidates scraped from Url: ' + Object.keys(body['titleCandidates']).length)
+    console.log('Lines scraped from Url: ' + body['lines'].length)
 
     this.setState({
       titleCandidates: body['titleCandidates'],
@@ -124,8 +124,11 @@ class App extends Component {
   
   handler(e, props) {
     if(e === 'urlRequested') {
-      console.log('Url requested: ' + props)  
-      this.callApi(props)
+      console.log('Url requested: ' + props)
+      let formattedUrl = props.replace(/http:\/\//, '')
+      formattedUrl = formattedUrl.replace(/\//g, ' ')
+      console.log('Formatted Url: ' + formattedUrl)  
+      this.callApi(formattedUrl)
     }
     if(e === 'lineSelected' && !this.state.titleSelected) {
       console.log('Line selected: ' + props[0])

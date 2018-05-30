@@ -12,9 +12,11 @@ const url = "mongodb://localhost:27017/"
 const app = express()
 const port = process.env.PORT || 5000;
 
-app.get('/url', (req, res) => {
+app.get('/url/:url', (req, res) => {
   console.log('Url API hit')
-  const url = 'http://www.collective-evolution.com/2016/10/18/15-quotes-on-false-flag-terrorism-the-secret-government-that-will-make-you-rethink-your-patriotism/'
+  console.log('Url received: ' + req.params.url)
+  const url = 'http://' + req.params.url.replace(/ /g, '/')
+  console.log('Url recieved formatted: ' + url)
   getLinesFromUrl(url, function(err, result) {
     if (err) {
       console.log(err)
@@ -22,9 +24,6 @@ app.get('/url', (req, res) => {
     console.log('Lines grabbed from URL: ' + result.length)
     res.send(result)
   })
-  //console.log(linesFromUrl)
-  //res.send({ lines: linesFromUrl });
-  //console.log(linesFromUrl)
 });
 
 app.listen(port, () => console.log(`Listening on port ${port}`));
