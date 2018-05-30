@@ -17,7 +17,6 @@ class LineRadio extends Component {
   }
 
   render() {
-    let i = 0
     return (
       <div>
         <input onClick={this.handleClick} type="radio" id='line' name={this.state.name} value={this.state.line} checked={this.state.isToggleOn}/>
@@ -25,6 +24,71 @@ class LineRadio extends Component {
       </div>
     )
   }
+}
+
+class LineButton extends Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+    	text: props.text,
+      isToggleOn: false,
+      style: {
+      	backgroundColor: 'MintCream',
+        border: '1px solid LightSteelBlue',
+        borderRadius: '2px',
+        padding: '5px',
+        fontSize: '16px'
+    	}
+    }
+  }
+
+  handleClick = (event) => {
+    this.setState(prevState => ({
+      isToggleOn: !prevState.isToggleOn
+    }));
+    if(this.state.isToggleOn) {
+      this.setState({
+        style: {
+        	backgroundColor: 'MintCream',
+          border: '1px solid LightSteelBlue',
+          borderRadius: '2px',
+        	padding: '5px',
+        	fontSize: '16px'
+      	}
+      })
+    }
+    else {
+      this.setState({
+        style: {
+        	backgroundColor: 'LightBlue',
+          border: '1px solid LightSteelBlue',
+          borderRadius: '2px',
+        	padding: '5px',
+        	fontSize: '16px'
+      	}
+      })
+    }
+    this.props.handler('lineSelected', [this.state.text, this.state.isToggleOn])
+  }
+
+  render() {
+    return (
+        <div>
+          <button onClick={this.handleClick} style={this.state.style} type="button" id='line'>
+            {this.state.text}
+          </button>
+        </div>
+    )
+  }
+}
+
+const LineButtonList = (props) => {
+  let i = 0
+  return (
+    <div>
+      {props.lines.map(line => <LineButton key={'line' + i++} handler={props.handler} text={line}/>)}
+    </div>
+  )
 }
 
 const LineRadioList = (props) => {
@@ -45,7 +109,7 @@ class ArticleListForm extends Component {
   render() {
     return (      
       <form onSubmit={this.handleSubmit}>
-        <LineRadioList handler={this.props.handler} lines={this.props.lines}/>
+        <LineButtonList handler={this.props.handler} lines={this.props.lines}/>
         <button type="submit">Select Lines</button>
       </form>
     )
