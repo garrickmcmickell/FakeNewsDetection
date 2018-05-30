@@ -13,7 +13,8 @@ class Line extends Component {
     this.setState(prevState => ({
       isToggleOn: !prevState.isToggleOn
     }));
-    this.props.handler('lineSelected', this.state.line)
+    console.log(this.key)
+    this.props.handler('lineSelected', [this.state.line, this.state.isToggleOn])
   }
 
   render() {
@@ -36,11 +37,12 @@ const LineList = (props) => {
   )
 }
 
-class TitleList extends Component {
+class TitleListForm extends Component {
   handleSubmit = (event) => {
     event.preventDefault()
     this.props.handler('titleSelected')
   }
+
   render() {
     const titleList = Object.entries(this.props.titleCandidates).map(value => {
       return (
@@ -59,7 +61,7 @@ class TitleList extends Component {
   }
 }
 
-class Form extends Component {
+class UrlForm extends Component {
   handleSubmit = (event) => {
     event.preventDefault()
     this.props.handler('urlRequested', this.url.value)
@@ -109,14 +111,37 @@ class App extends Component {
       this.callApi(props)
     }
     if(e === 'lineSelected' && !this.state.titleSelected) {
-      console.log('Line selected: ' + props)
-      this.setState({title: props})
+      console.log('Line selected: ' + props[0])
+      this.setState({
+        title: props[0]
+      })
     }
     if(e === 'titleSelected') {
       console.log('Title selected :' + this.state.title)
       console.log('Index of title: '+ this.state.lines.indexOf(this.state.title))
       this.state.lines.splice(0, this.state.lines.indexOf(this.state.title) + 1)
-      this.setState({titleSelected: true})
+      this.setState({
+        titleSelected: true,
+        selectedLines: []
+      })
+    }
+    if(e === 'lineSelected' && this.state.titleSelected) {
+      if(!props[1]) {
+      console.log('Line added: ' + props[0])
+      let selectedLines = this.state.selectedLines
+      selectedLines.push(props[0])
+      this.setState({
+        selectedLines: selectedLines
+      })
+      }
+      else {
+        console.log('Line removed: ' + props[0])
+        let selectedLines = this.state.selectedLines
+        selectedLines = selectedLines.filter(line => line !== props[0])
+        this.setState({
+          selectedLines: selectedLines
+        })
+      }
     }
     //if(e === 'urlAccepted') {
     //  this.setState({
@@ -128,14 +153,14 @@ class App extends Component {
   render() {
     if(!this.state.enteredURL) {
       return (
-        <Form handler={this.handler}/>
+        <UrlForm handler={this.handler}/>
       )
     }
     else if(!this.state.titleSelected) {
       return (
         <div>
           <h1>Select Title</h1>
-          <TitleList handler={this.handler} titleCandidates={this.state.titleCandidates}/>
+          <TitleListForm handler={this.handler} titleCandidates={this.state.titleCandidates}/>
         </div>
       )
     } else if(!this.setState.linesSelected) {
