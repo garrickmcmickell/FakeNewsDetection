@@ -99,33 +99,45 @@ class App extends Component {
     this.handler = this.handler.bind(this)
     this.confirmLines = this.confirmLines.bind(this)
     this.rejectLines = this.rejectLines.bind(this)
-    this.state = {enteredURL: false}
+    this.state = {urlEntered: false}
   }
 
   callApi = async (props) => {
-    console.log('Api props: ' + props)
-    const response = await fetch('/url/' + props);
-    const body = await response.json();
+    try {
+      console.log('Api props: ' + props)
+      const response = await fetch('/url/' + props);
+      const body = await response.json();
+      
+      if (response.status !== 200) {
+        this.setState({
+          urlEntered: true,
+          urlAccepted: false
+        })
+      }
+      else {
+        console.log(body)
+        console.log('Title candidates scraped from Url: ' + Object.keys(body['titleCandidates']).length)
+        console.log('Lines scraped from Url: ' + body['lines'].length)
     
-    console.log(body)
-    console.log('Title candidates scraped from Url: ' + Object.keys(body['titleCandidates']).length)
-    console.log('Lines scraped from Url: ' + body['lines'].length)
-
-    this.setState({
-      titleCandidates: body['titleCandidates'],
-      lines: body['lines'],
-      enteredURL: true
-    })
-    
-    if (response.status !== 200) throw Error(body.message);
-
-    return body;
+        this.setState({
+          titleCandidates: body['titleCandidates'],
+          lines: body['lines'],
+          urlEntered: true,
+          urlAccepted: true
+        })
+      }
+    } catch(err) {
+      this.setState({
+        urlEntered: true,
+        urlAccepted: false
+      })
+    }
   };
   
   handler(e, props) {
     if(e === 'urlRequested') {
       console.log('Url requested: ' + props)
-      let formattedUrl = props.replace(/http:\/\//, '')
+      let formattedUrl = props.replace(/https?:\/\//, '')
       formattedUrl = formattedUrl.replace(/\//g, ' ')
       console.log('Formatted Url: ' + formattedUrl)  
       this.callApi(formattedUrl)
@@ -184,9 +196,17 @@ class App extends Component {
   }
   
   render() {
-    if(!this.state.enteredURL) {
+    if(!this.state.urlEntered) {
       return (
         <UrlForm handler={this.handler}/>
+      )
+    }
+    else if(!this.state.urlAccepted){
+      return (
+        <div>
+          <UrlForm handler={this.handler}/>
+          <h3>Url not accepted</h3>
+        </div>
       )
     }
     else if(!this.state.titleSelected) {
