@@ -152,11 +152,9 @@ class UrlForm extends Component {
   }
   render() {
     return (
-      <form onSubmit={this.handleSubmit}>
-        <input type="text" 
-          ref={(input) => this.url = input}
-          placeholder="Enter Url" required/>
-        <button type="submit" className='button'>Get Text</button>
+      <form onSubmit={this.handleSubmit} className='urlForm'>
+        <input type="text" className='textInput' ref={(input) => this.url = input} placeholder="Enter Url" required/>
+        <button type="submit" className='button' id='enterUrl'>Start</button>
       </form>
     )
   }
@@ -177,7 +175,15 @@ class Body extends Component {
     const stage = this.props.state.stage
     if(stage === 'urlNotEntered') {
       return (
-        <UrlForm handler={this.props.handler}/>
+        <div className='startContent'>
+          <p className='startQuote'>
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. In eu sagittis lorem. Donec tristique nisl vitae est congue, ut ullamcorper eros volutpat." – Lorem Ipsum
+          </p>
+          <p className='startText'>
+            Curabitur eleifend nunc purus, porta pellentesque massa vulputate eget. Sed sit amet velit sapien. Suspendisse eleifend in dolor pulvinar efficitur. Ut commodo dui ac est molestie placerat. Aliquam placerat odio vitae lacus ultrices rutrum.
+          </p>
+          <UrlForm handler={this.props.handler}/>
+        </div>
       )
     }
     else if(stage === 'urlNotAccepted'){
@@ -328,6 +334,7 @@ class App extends Component {
       <div className='body'>
         <Banner />        
         <div className='content'>
+          <div className='filter'></div>
           <Body handler={this.handler} state={this.state}/>
         </div>
       </div>
