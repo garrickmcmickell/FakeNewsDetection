@@ -14,7 +14,7 @@ class LineRadio extends Component {
     this.setState(prevState => ({
       isToggleOn: !prevState.isToggleOn
     }));
-    this.props.handler('lineSelected', [this.state.line, this.state.isToggleOn])
+    this.props.handler('lineRadioSelected', this.state.line)
   }
 
   render() {
@@ -130,7 +130,7 @@ class TitleListForm extends Component {
   render() {
     const titleList = Object.entries(this.props.titleCandidates).map(value => {
       return (
-        <div key={'divFor' + 'lineList' + value[0]}>        
+        <div key={'divForlineList' + value[0]}>        
           <h2>Rank {value[0]}</h2>
           <LineRadioList key={'lineList' + value[0]} handler={this.props.handler} name='titles' lines={value[1]}/>
         </div>
@@ -174,9 +174,52 @@ class Banner extends Component {
 
 class Body extends Component {
   render() {
-    return (
-      <div></div>
-    )
+    const stage = this.props.state.stage
+    if(stage === 'urlNotEntered') {
+      return (
+        <UrlForm handler={this.props.handler}/>
+      )
+    }
+    else if(stage === 'urlNotAccepted'){
+      return (
+        <div>
+          <UrlForm handler={this.props.handler}/>
+          <h3>Url not accepted</h3>
+        </div>
+      )
+    }
+    else if(stage === 'urlAccepted') {
+      return (
+        <div>
+          <h1>Select Title</h1>
+          <TitleListForm handler={this.props.handler} titleCandidates={this.props.state.titleCandidates}/>
+        </div>
+      )
+    } 
+    else if(stage === 'titleSelected') {
+      return (
+        <div>
+          <h1>{this.props.state.title}</h1>
+          <ArticleListForm handler={this.props.handler} lines={this.props.state.lines}/>
+        </div>
+      )
+    }
+    else if(stage === 'linesSelected') {
+      return (
+        <div>
+          <h1>{this.props.state.title}</h1>
+          {this.props.state.selectedLines.map((line, index) => <p key={'line' + index}>{line}</p>)}
+          <h3>Is this right?</h3>
+          <button onClick={this.confirmLines} type='button' className='button'>Yes</button>
+          <button onClick={this.rejectLines} type='button' className='button'>No</button>
+        </div>
+      )
+    }
+    else {
+      return (
+        <h1>Article accepted</h1>
+      )
+    }
   } 
 }
 
@@ -186,7 +229,7 @@ class App extends Component {
     this.handler = this.handler.bind(this)
     this.confirmLines = this.confirmLines.bind(this)
     this.rejectLines = this.rejectLines.bind(this)
-    this.state = {urlEntered: false}
+    this.state = {stage: 'urlNotEntered'}
   }
 
   callApi = async (props) => {
@@ -209,14 +252,12 @@ class App extends Component {
         this.setState({
           titleCandidates: body['titleCandidates'],
           lines: body['lines'],
-          urlEntered: true,
-          urlAccepted: true
+          stage: 'urlAccepted'
         })
       }
     } catch(err) {
       this.setState({
-        urlEntered: true,
-        urlAccepted: false
+        stage: 'urlNotAccepted'
       })
     }
   };
@@ -229,10 +270,10 @@ class App extends Component {
       console.log('Formatted Url: ' + formattedUrl)  
       this.callApi(formattedUrl)
     }
-    if(e === 'lineSelected' && !this.state.titleSelected) {
-      console.log('Line selected: ' + props[0])
+    if(e === 'lineRadioSelected' && this.state.stage === 'urlAccepted') {
+      console.log('Line selected: ' + props)
       this.setState({
-        title: props[0]
+        title: props
       })
     }
     if(e === 'titleSelected') {
@@ -240,11 +281,11 @@ class App extends Component {
       console.log('Index of title: '+ this.state.lines.indexOf(this.state.title))
       this.state.lines.splice(0, this.state.lines.indexOf(this.state.title) + 1)
       this.setState({
-        titleSelected: true,
+        stage: e,
         selectedLines: []
       })
     }
-    if(e === 'lineSelected' && this.state.titleSelected) {
+    if(e === 'lineSelected' && this.state.stage === 'titleSelected') {
       if(!props[1]) {
       console.log('Line added: ' + props[0])
       let selectedLines = this.state.selectedLines
@@ -264,7 +305,7 @@ class App extends Component {
     }
     if(e === 'linesSelected') {
       this.setState({
-        linesSelected: true
+        stage: e
       })
     }
   }
@@ -287,55 +328,10 @@ class App extends Component {
       <div className='body'>
         <Banner />        
         <div className='content'>
-          <Body state={this.state}/>
+          <Body handler={this.handler} state={this.state}/>
         </div>
       </div>
     )
-    if(!this.state.urlEntered) {
-      return (
-        <UrlForm handler={this.handler}/>
-      )
-    }
-    else if(!this.state.urlAccepted){
-      return (
-        <div>
-          <UrlForm handler={this.handler}/>
-          <h3>Url not accepted</h3>
-        </div>
-      )
-    }
-    else if(!this.state.titleSelected) {
-      return (
-        <div>
-          <h1>Select Title</h1>
-          <TitleListForm handler={this.handler} titleCandidates={this.state.titleCandidates}/>
-        </div>
-      )
-    } 
-    else if(!this.state.linesSelected) {
-      return (
-        <div>
-          <h1>{this.state.title}</h1>
-          <ArticleListForm handler={this.handler} lines={this.state.lines}/>
-        </div>
-      )
-    }
-    else if(!this.state.linesConfirmed) {
-      return (
-        <div>
-          <h1>{this.state.title}</h1>
-          {this.state.selectedLines.map(line => <p>{line}</p>)}
-          <h3>Is this right?</h3>
-          <button onClick={this.confirmLines} type='button' className='button'>Yes</button>
-          <button onClick={this.rejectLines} type='button' className='button'>No</button>
-        </div>
-      )
-    }
-    else {
-      return (
-        <h1>Article accepted</h1>
-      )
-    }
   }
 }
 
