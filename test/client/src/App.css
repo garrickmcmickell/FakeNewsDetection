@@ -23,8 +23,12 @@
 }
 
 @keyframes App-logo-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .container {
@@ -61,11 +65,11 @@
   border-radius: 50%;
 }
 
-.container:hover input ~ .checkmark {
+.container:hover input~.checkmark {
   background-color: #ccc;
 }
 
-.container input:checked ~ .checkmark {
+.container input:checked~.checkmark {
   background-color: #2196F3;
 }
 
@@ -75,17 +79,17 @@
   display: none;
 }
 
-.container input:checked ~ .checkmark:after {
+.container input:checked~.checkmark:after {
   display: block;
 }
 
 .container .checkmark:after {
- top: 5px;
-left: 5px;
-width: 15px;
-height: 15px;
-border-radius: 50%;
-background: white;
+  top: 5px;
+  left: 5px;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: white;
 }
 
 .button {
@@ -98,10 +102,68 @@ background: white;
   font-size: 16px;
   text-align: center;
   -webkit-transition-duration: 0.3s;
-   transition-duration: 0.3s;
+  transition-duration: 0.3s;
 }
 
 .button:hover {
-    background-color: #2196F3;
-    color: white;
+  background-color: #2196F3;
+  color: white;
+}
+
+.banner {
+  background-color: #031425;
+  width: 100%;
+  height: 50px;
+  opacity: 0.9;
+}
+
+.bannerButton {
+  position: absolute;
+  right: 0px;
+  height: 50px;
+  background-color: #031425;
+  color: white;
+  text-shadow: 2px 2px 5px black;
+  font-size: 16px;
+  font-family: "Trebuchet MS", Helvetica, sans-serif;
+  border: none;
+  border-bottom: 2px solid #031425;
+  outline: none;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+.bannerButton:hover {
+  border-bottom: 2px solid white;
+}
+
+.bannerButton:active {
+  background-color: #041a2f;
+}
+
+.body {
+  position: absolute;
+  top: 0px;
+  bottom: 0px;
+  width: 100%;
+}
+
+.content {
+  background-color: white;
+  top: 50px;
+  bottom: 0px;
+  height: 100%;
+  opacity: 0.35;
+}
+
+body {
+  padding: 0px;
+  margin: 0px;
+}
+
+html {
+  background: url(https://images.pexels.com/photos/177557/pexels-photo-177557.jpeg) no-repeat center center fixed;
+  background-size: cover;
+  height: 100%;
+  overflow: hidden;
 }

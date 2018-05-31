@@ -162,6 +162,24 @@ class UrlForm extends Component {
   }
 }
 
+class Banner extends Component {
+	render() {
+  	return (
+    	<div className='banner'>
+    	  <button type='button' className='bannerButton'>About</button>
+    	</div>
+    )
+  }
+}
+
+class Body extends Component {
+  render() {
+    return (
+      <div></div>
+    )
+  } 
+}
+
 class App extends Component {
   constructor(props) {
     super(props)
@@ -265,6 +283,14 @@ class App extends Component {
   }
   
   render() {
+    return (
+      <div className='body'>
+        <Banner />        
+        <div className='content'>
+          <Body state={this.state}/>
+        </div>
+      </div>
+    )
     if(!this.state.urlEntered) {
       return (
         <UrlForm handler={this.handler}/>
@@ -309,7 +335,7 @@ class App extends Component {
       return (
         <h1>Article accepted</h1>
       )
-    } 
+    }
   }
 }
 
