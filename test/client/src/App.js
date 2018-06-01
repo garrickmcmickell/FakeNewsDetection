@@ -208,22 +208,33 @@ const StartContentBottom = () => {
   )
 }
 
+const StartContentError = () => {
+  return (
+    <div className='startContentError'>
+      <h3 className='urlNotAccepted'>
+        Url not accepted
+      </h3>
+    </div>
+  )
+}
+
 class Body extends Component {
   render() {
     const stage = this.props.state.stage
     if(stage === 'urlNotEntered') {
       return (
         <div className='startContent'>
-          <StartContentTop />
+          <StartContentTop/>
           <UrlForm handler={this.props.handler}/>
         </div>
       )
     }
     else if(stage === 'urlNotAccepted'){
       return (
-        <div>
-          <UrlForm handler={this.props.handler}/>
-          <h3>Url not accepted</h3>
+        <div className='startContent'>
+          <StartContentTop/>
+          <StartContentError/>
+          <UrlForm handler={this.props.handler}/>    
         </div>
       )
     }

@@ -130,7 +130,7 @@
 .startContent {
   background-color: transparent;
   width: 400px;
-  height: 317.5px;
+  height: auto;
   margin-left: auto;
   margin-right: auto;
   margin-top: 15%;
@@ -166,6 +166,21 @@
   text-align: justify;
   padding-left: 30px;
   padding-right: 30px;
+}
+
+.startContentError {
+  display: inline-block;
+  background-color: white;
+  opacity: 0.95;
+  width: 400px;
+}
+
+.urlNotAccepted {
+  font-family: "Trebuchet MS", Helvetica, sans-serif;
+  text-align: center;
+  color: red;
+  margin-top: 0px;
+  margin-bottom: 20px;
 }
 
 /*Don't remove anything*/
@@ -258,6 +273,10 @@ html {
     margin-left: 7.5%;
     margin-right: 7.5%;
     margin-top: 7.5%;
+  }
+
+  .startContentError {
+    width: 100%;
   }
   
   .startContentMiddle {
