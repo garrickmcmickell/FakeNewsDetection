@@ -1,0 +1,131 @@
+.startContent {
+  background-color: transparent;
+  width: 400px;
+  height: auto;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 15%;
+  border: 1px solid white;
+  border-radius: 2px;
+  opacity: 0.95;
+}
+
+.startContentTop {
+  display: inline-block;
+  background-color: white;
+  opacity: 0.95;
+}
+
+.startQuote {
+  font-size: 16px;
+  font-family: "Trebuchet MS", Helvetica, sans-serif;
+  font-style: italic;
+  text-align: center;
+  color:  rgb(26, 26, 26, 0.5);
+  padding-left: 30px;
+  padding-right: 30px;
+  margin-top: 15px;
+  margin-bottom: 0px;
+}
+
+.startText {
+  font-size: 16px;
+  font-family: "Trebuchet MS", Helvetica, sans-serif;
+  text-align: justify;
+  padding-left: 30px;
+  padding-right: 30px;
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+
+.startContentStatus {
+  display: inline-block;
+  background-color: white;
+  opacity: 0.95;
+  width: 400px;
+}
+
+.urlStatus {
+  font-family: "Trebuchet MS", Helvetica, sans-serif;
+  padding-bottom: 15px;
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
+#urlStatusPending {
+  color: green;
+  text-align: center;
+}
+
+#urlStatusError {
+  color: red;
+  text-align: center;
+}
+
+.startContentMiddle {
+  width: 400px;
+  height: 32.5px;
+}
+
+.startContentMiddleLeft {
+  display: inline-block;
+  width: 15px;
+  height: 32.5px;
+  background-color: white;
+  opacity: 0.95;
+}
+
+.startContentMiddleMiddle {
+  display: inline-block;  
+  width: 370px;
+  height: 32.5px;
+}
+
+.startContentMiddleDiv {
+  position: absolute;
+  width: 366px;
+  height: 28.5px;
+  border: 2px solid #262626;
+  background-color: transparent;
+  border-radius: 2px;
+}
+
+.textInput {
+  background-color: rgb(0, 0, 0, 0.5);
+  width: 360px;
+  position: absolute;
+  font-size: 16px;
+  color: white;
+  outline: none;
+  border: none;
+  padding: 5px;
+}
+
+.startContentMiddleRight {
+  display: inline-block;
+  width: 15px;
+  height: 32.5px;
+  background-color: white;
+  opacity: 0.95;
+}
+
+::placeholder {
+  color: lightgray;
+  font-style: italic;
+}
+
+.startContentBottom {
+  display: inline-block;
+  background-color: white;
+  width: 400px;
+  opacity: 0.95;
+}
+
+#enterUrl {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  width: 85%;
+}

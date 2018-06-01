@@ -1,0 +1,17 @@
+default {
+  background-color: MintCream;
+  border: 1px solid LightSteelBlue;
+  border-radius: 2px;
+  padding: 5px;
+  font-size: 16px;
+  text-align: left;
+}
+
+selected {
+  background-color: LightBlue;
+  border: 1px solid LightSteelBlue;
+  border-radius: 2px;
+  padding: 5px;
+  font-size: 16px;
+  text-align: left;
+}

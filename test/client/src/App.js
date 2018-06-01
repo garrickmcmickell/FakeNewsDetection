@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import './App.css';
+import './Styles/App.css';
 
 class LineRadio extends Component {
   constructor(props) {
@@ -19,10 +19,10 @@ class LineRadio extends Component {
 
   render() {
     return (
-      <label className="container">
+      <label className="lineRadioContainer">
         {this.state.line}
         <input onChange={this.handleChange} type="radio" name='radio'/>
-        <span className="checkmark"></span>
+        <span className="lineRadioCheckmark"></span>
       </label>
     )
   }
@@ -208,13 +208,27 @@ const StartContentBottom = () => {
   )
 }
 
+const StartContentStatus = (props) => {
+  return (
+    <div className='startContentStatus'>
+      {props.status}
+    </div>
+  )
+}
+
+const StartContentPending = () => {
+  return (
+    <h3 className='urlStatus' id='urlStatusPending'>
+      Thinking.
+    </h3>
+  )
+}
+
 const StartContentError = () => {
   return (
-    <div className='startContentError'>
-      <h3 className='urlNotAccepted'>
-        Url not accepted
-      </h3>
-    </div>
+    <h3 className='urlStatus' id='urlStatusError'>
+      Url not accepted.
+    </h3>
   )
 }
 
@@ -229,11 +243,20 @@ class Body extends Component {
         </div>
       )
     }
+    else if(stage === 'urlPending'){
+      return (
+        <div className='startContent'>
+          <StartContentTop/>
+          <StartContentStatus status={<StartContentPending/>}/>
+          <UrlForm handler={this.props.handler}/>    
+        </div>
+      )
+    }
     else if(stage === 'urlNotAccepted'){
       return (
         <div className='startContent'>
           <StartContentTop/>
-          <StartContentError/>
+          <StartContentStatus status={<StartContentError/>}/>
           <UrlForm handler={this.props.handler}/>    
         </div>
       )
@@ -285,16 +308,15 @@ class App extends Component {
   callApi = async (props) => {
     try {
       console.log('Api props: ' + props)
+
+      this.setState({
+        stage: 'urlPending'
+      })
+
       const response = await fetch('/url/' + props);
       const body = await response.json();
-      
-      if (response.status !== 200) {
-        this.setState({
-          urlEntered: true,
-          urlAccepted: false
-        })
-      }
-      else {
+
+      if (response.status == 200) {
         console.log(body)
         console.log('Title candidates scraped from Url: ' + Object.keys(body['titleCandidates']).length)
         console.log('Lines scraped from Url: ' + body['lines'].length)

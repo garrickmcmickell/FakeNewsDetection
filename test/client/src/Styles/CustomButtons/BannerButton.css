@@ -1,0 +1,23 @@
+.bannerButton {
+  position: absolute;
+  right: 0px;
+  height: 50px;
+  background-color: #031425;
+  color: white;
+  text-shadow: 2px 2px 5px black;
+  font-size: 16px;
+  font-family: "Trebuchet MS", Helvetica, sans-serif;
+  border: none;
+  border-bottom: 2px solid #031425;
+  outline: none;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+.bannerButton:hover {
+  border-bottom: 2px solid white;
+}
+
+.bannerButton:active {
+  background-color: #041a2f;
+}

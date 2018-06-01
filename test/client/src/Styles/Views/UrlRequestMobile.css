@@ -1,0 +1,103 @@
+@media screen and (max-width: 500px) {
+  .startContent {
+    width: auto;
+    height: auto;
+    margin-left: 7.5%;
+    margin-right: 7.5%;
+    margin-top: 7.5%;
+  }
+
+  .startContentStatus {
+    width: 100%;
+  }
+  
+  .startContentMiddle {
+    width: auto;
+  }
+
+  .startContentMiddleLeft {
+    width: 5%;
+  }
+
+  .startContentMiddleMiddle {
+    width: 90%;
+  }
+
+  .startContentMiddleDiv {
+    position: static;
+    width: auto;
+  }
+  
+  .textInput {
+    width: 75%;
+  }
+
+  .startContentMiddleRight {
+    width: 5%;
+  }
+
+  .startContentBottom {
+    width: 100%;
+  }
+}
+
+@media screen and (max-height: 500px) {
+  .startContent {
+    width: auto;
+    height: auto;
+    margin-left: 2%;
+    margin-right: 2%;
+    margin-top: 2%;
+  }
+
+  .startQuote {
+    margin-top: 5px;
+  }
+
+  .startText {
+    margin-top: 5px;
+    margin-bottom: 5px;
+  }
+
+  .urlStatus {
+    padding-bottom: 5px;
+  }
+
+  .startContentStatus {
+    width: 100%;
+  }
+  
+  .startContentMiddle {
+    width: auto;
+  }
+
+  .startContentMiddleLeft {
+    width: 5%;
+  }
+
+  .startContentMiddleMiddle {
+    width: 90%;
+  }
+
+  .startContentMiddleDiv {
+    position: static;
+    width: auto;
+  }
+  
+  .textInput {
+    width: 85%;
+  }
+
+  .startContentMiddleRight {
+    width: 5%;
+  }
+
+  .startContentBottom {
+    width: 100%;
+  }
+
+  #enterUrl {
+    margin-top: 5px;
+    margin-bottom: 5px;
+  }
+}
