@@ -20,9 +20,12 @@ app.get('/url/:url', (req, res) => {
   getLinesFromUrl(url, function(err, result) {
     if (err) {
       console.log(err)
+      res.send(err)
     }
-    console.log('Lines grabbed from URL: ' + result.length)
-    res.send(result)
+    else {
+      console.log('Lines grabbed from URL: ' + result.lines.length)
+      res.send(result)
+    }
   })
 });
 
