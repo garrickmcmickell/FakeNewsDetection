@@ -153,8 +153,18 @@ class UrlForm extends Component {
   render() {
     return (
       <form onSubmit={this.handleSubmit} className='urlForm'>
-        <input type="text" className='textInput' ref={(input) => this.url = input} placeholder="Enter Url" required/>
-        <button type="submit" className='button' id='enterUrl'>Start</button>
+        <div className='startContentMiddle'>
+          <div className='startContentMiddleLeft'></div>
+          <div className='startContentMiddleMiddle'>
+            <div className='startContentMiddleDiv'>
+              <input type="text" className='textInput' ref={(input) => this.url = input} placeholder="Enter Url" required/>
+            </div>
+          </div>
+          <div className='startContentMiddleRight'></div>
+        </div>
+        <div className='startContentBottom'>
+          <button type="submit" className='button' id='enterUrl'>Start</button>
+        </div>
       </form>
     )
   }
@@ -176,12 +186,14 @@ class Body extends Component {
     if(stage === 'urlNotEntered') {
       return (
         <div className='startContent'>
-          <p className='startQuote'>
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. In eu sagittis lorem. Donec tristique nisl vitae est congue, ut ullamcorper eros volutpat." – Lorem Ipsum
-          </p>
-          <p className='startText'>
-            Curabitur eleifend nunc purus, porta pellentesque massa vulputate eget. Sed sit amet velit sapien. Suspendisse eleifend in dolor pulvinar efficitur. Ut commodo dui ac est molestie placerat. Aliquam placerat odio vitae lacus ultrices rutrum.
-          </p>
+          <div className='startContentTop'>
+            <p className='startQuote'>
+              "Lorem ipsum dolor sit amet, consectetur adipiscing elit. In eu sagittis lorem. Donec tristique nisl vitae est congue, ut ullamcorper eros volutpat." – Lorem Ipsum
+            </p>
+            <p className='startText'>
+              Curabitur eleifend nunc purus, porta pellentesque massa vulputate eget. Sed sit amet velit sapien. Suspendisse eleifend in dolor pulvinar efficitur. Ut commodo dui ac est molestie placerat. Aliquam placerat odio vitae lacus ultrices rutrum.
+            </p>
+          </div>
           <UrlForm handler={this.props.handler}/>
         </div>
       )
