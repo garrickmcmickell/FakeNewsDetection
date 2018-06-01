@@ -144,6 +144,7 @@
   display: inline-block;
   background-color: white;
   opacity: 0.95;
+  
 }
 
 /*Don't remove anything*/
@@ -155,6 +156,7 @@
   color:  rgb(26, 26, 26, 0.5);
   padding-left: 30px;
   padding-right: 30px;
+  margin-top: 15px;
   margin-bottom: 0px;
 
 }
@@ -166,6 +168,8 @@
   text-align: justify;
   padding-left: 30px;
   padding-right: 30px;
+  margin-top: 15px;
+  margin-bottom: 15px;
 }
 
 .startContentError {
@@ -179,8 +183,9 @@
   font-family: "Trebuchet MS", Helvetica, sans-serif;
   text-align: center;
   color: red;
+  padding-bottom: 15px;
   margin-top: 0px;
-  margin-bottom: 20px;
+  margin-bottom: 0px;
 }
 
 /*Don't remove anything*/
@@ -264,6 +269,7 @@ html {
   background: url(https://images.pexels.com/photos/177557/pexels-photo-177557.jpeg) no-repeat center center fixed;
   background-size: cover;
   overflow-y: hidden;
+  overflow-x: scroll;
 }
 
 @media screen and (max-width: 500px) {
@@ -306,5 +312,67 @@ html {
 
   .startContentBottom {
     width: 100%;
+  }
+}
+
+@media screen and (max-height: 500px) {
+  .startContent {
+    width: auto;
+    height: auto;
+    margin-left: 2%;
+    margin-right: 2%;
+    margin-top: 2%;
+  }
+
+  .startQuote {
+    margin-top: 5px;
+  }
+
+  .startText {
+    margin-top: 5px;
+    margin-bottom: 5px;
+  }
+
+  .urlNotAccepted {
+    padding-bottom: 5px;
+  }
+
+  .startContentError {
+    width: 100%;
+    
+  }
+  
+  .startContentMiddle {
+    width: auto;
+  }
+
+  .startContentMiddleLeft {
+    width: 5%;
+  }
+
+  .startContentMiddleMiddle {
+    width: 90%;
+  }
+
+  .startContentMiddleDiv {
+    position: static;
+    width: auto;
+  }
+  
+  .textInput {
+    width: 85%;
+  }
+
+  .startContentMiddleRight {
+    width: 5%;
+  }
+
+  .startContentBottom {
+    width: 100%;
+  }
+
+  #enterUrl {
+    margin-top: 5px;
+    margin-bottom: 5px;
   }
 }
