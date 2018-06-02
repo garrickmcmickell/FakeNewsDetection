@@ -34,16 +34,27 @@ class LineButton extends Component {
     super(props)
     this.state = {
     	text: props.text,
-      isToggleOn: false,
-      style: {
-      	backgroundColor: 'MintCream',
-        border: '1px solid LightSteelBlue',
-        borderRadius: '2px',
-        padding: '5px',
-        fontSize: '16px',
-        textAlign: 'left'
-    	}
+      isToggleOn: props.toggle ? true : false,
+      style: props.toggle ? this.selected : this.notSelected
     }
+  }
+
+  notSelected = {
+    backgroundColor: 'MintCream',
+    border: '1px solid LightSteelBlue',
+    borderRadius: '2px',
+    padding: '5px',
+    fontSize: '16px',
+    textAlign: 'left'
+  }
+
+  selected = {
+    backgroundColor: 'LightBlue',
+    border: '1px solid LightSteelBlue',
+    borderRadius: '2px',
+    padding: '5px',
+    fontSize: '16px',
+    textAlign: 'left'
   }
 
   handleClick = (event) => {
@@ -52,28 +63,15 @@ class LineButton extends Component {
     }));
     if(this.state.isToggleOn) {
       this.setState({
-        style: {
-        	backgroundColor: 'MintCream',
-          border: '1px solid LightSteelBlue',
-          borderRadius: '2px',
-        	padding: '5px',
-        	fontSize: '16px',
-          textAlign: 'left'
-      	}
+        style: this.notSelected
       })
     }
     else {
       this.setState({
-        style: {
-        	backgroundColor: 'LightBlue',
-          border: '1px solid LightSteelBlue',
-          borderRadius: '2px',
-        	padding: '5px',
-        	fontSize: '16px',
-          textAlign: 'left'
-      	}
+        style: this.selected
       })
     }
+    console.log('line')
     this.props.handler('lineSelected', [this.state.text, this.state.isToggleOn])
   }
 
@@ -89,10 +87,16 @@ class LineButton extends Component {
 }
 
 const LineButtonList = (props) => {
-  let i = 0
+  let i = 0;
   return (
     <div>
-      {props.lines.map(line => <LineButton key={'line' + i++} handler={props.handler} text={line}/>)}
+      {props.lines.map(line => {
+        if(props.selectedLines.includes(line)) 
+          return <LineButton key={'line' + i++} handler={props.handler} text={line} toggle={true}/>
+        else
+          return <LineButton key={'line' + i++} handler={props.handler} text={line}/>
+      }
+    )}
     </div>
   )
 }
@@ -115,7 +119,7 @@ class ArticleListForm extends Component {
   render() {
     return (      
       <form onSubmit={this.handleSubmit}>
-        <LineButtonList handler={this.props.handler} lines={this.props.lines}/>
+        <LineButtonList handler={this.props.handler} lines={this.props.lines} selectedLines={this.props.selectedLines}/>
         <button type="submit" className='button'>Select Lines</button>
       </form>
     )
@@ -156,38 +160,46 @@ class Banner extends Component {
   }
 }
 
-class Body extends Component {
-  render() {
-    const stage = this.props.state.stage
+const Body = (props) => {
+  const confirmLines = () => {
+    props.handler('linesConfirmed')
+  }
+
+  const rejectLines = () => {
+    props.handler('linesRejected')
+  }
+
+  const stage = props.state.stage
+
     if(stage === 'urlNotAccepted') {
       return (
-        <StartPage handler={this.props.handler}/>
+        <StartPage handler={props.handler}/>
       )
     }
     else if(stage === 'urlAccepted') {
       return (
         <div>
           <h1>Select Title</h1>
-          <TitleListForm handler={this.props.handler} titleCandidates={this.props.state.titleCandidates}/>
+          <TitleListForm handler={props.handler} titleCandidates={props.state.titleCandidates}/>
         </div>
       )
     } 
-    else if(stage === 'titleSelected') {
+    else if(stage === 'titleSelected' || stage === 'linesRejected') {
       return (
         <div>
-          <h1>{this.props.state.title}</h1>
-          <ArticleListForm handler={this.props.handler} lines={this.props.state.lines}/>
+          <h1>{props.state.title}</h1>
+          <ArticleListForm handler={props.handler} lines={props.state.lines} selectedLines={props.state.selectedLines}/>
         </div>
       )
     }
     else if(stage === 'linesSelected') {
       return (
         <div>
-          <h1>{this.props.state.title}</h1>
-          {this.props.state.selectedLines.map((line, index) => <p key={'line' + index}>{line}</p>)}
+          <h1>{props.state.title}</h1>
+          {props.state.selectedLines.map((line, index) => <p key={'line' + index}>{line}</p>)}
           <h3>Is this right?</h3>
-          <button onClick={this.confirmLines} type='button' className='button'>Yes</button>
-          <button onClick={this.rejectLines} type='button' className='button'>No</button>
+          <button onClick={confirmLines} type='button' className='button'>Yes</button>
+          <button onClick={rejectLines} type='button' className='button'>No</button>
         </div>
       )
     }
@@ -196,15 +208,13 @@ class Body extends Component {
         <h1>Article accepted</h1>
       )
     }
-  } 
+
 }
 
 class App extends Component {
   constructor(props) {
     super(props)
     this.handler = this.handler.bind(this)
-    this.confirmLines = this.confirmLines.bind(this)
-    this.rejectLines = this.rejectLines.bind(this)
     this.state = {stage: 'urlNotAccepted'}
   }
   
@@ -231,7 +241,7 @@ class App extends Component {
         selectedLines: []
       })
     }
-    if(e === 'lineSelected' && this.state.stage === 'titleSelected') {
+    if(e === 'lineSelected' && (this.state.stage === 'titleSelected' || this.state.stage === 'linesRejected')) {
       if(!props[1]) {
       console.log('Line added: ' + props[0])
       let selectedLines = this.state.selectedLines
@@ -254,19 +264,11 @@ class App extends Component {
         stage: e
       })
     }
-  }
-
-  confirmLines() {
-    this.setState({
-      linesConfirmed: true
-    })
-  }
-
-  rejectLines() {
-    this.setState({
-      linesSelected: false,
-      selectedLines: []
-    })
+    if(e === 'linesRejected') {
+      this.setState({
+        stage: e
+      })
+    }
   }
   
   render() {
