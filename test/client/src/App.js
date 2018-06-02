@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import StartPage from './Views/StartPage'
 import './Styles/App.css';
 
 class LineRadio extends Component {
@@ -145,24 +146,6 @@ class TitleListForm extends Component {
   }
 }
 
-const UrlForm = (props) => { 
-  const handleInput = (input) => {
-    this.input = input
-  }
-
-  const handleSubmit = (event) => {
-    event.preventDefault()
-    props.handler('urlRequested', this.input.value)
-  }
-
-  return (
-    <form onSubmit={handleSubmit.bind(this)} className='urlForm'>
-      <StartContentMiddle handleInput={handleInput.bind(this)}/>
-      <StartContentBottom/>
-    </form>
-  )
-}
-
 class Banner extends Component {
 	render() {
   	return (
@@ -173,92 +156,12 @@ class Banner extends Component {
   }
 }
 
-const StartContentTop = () => {
-  return (    
-    <div className='startContentTop'>
-      <p className='startQuote'>
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. In eu sagittis lorem. Donec tristique nisl vitae est congue, ut ullamcorper eros volutpat." – Lorem Ipsum
-      </p>
-      <p className='startText'>
-        Curabitur eleifend nunc purus, porta pellentesque massa vulputate eget. Sed sit amet velit sapien. Suspendisse eleifend in dolor pulvinar efficitur. Ut commodo dui ac est molestie placerat. Aliquam placerat odio vitae lacus ultrices rutrum.
-      </p>
-    </div>
-  )
-}
-
-const StartContentMiddle = (props) => {
-  return (
-    <div className='startContentMiddle'>
-      <div className='startContentMiddleLeft'></div>
-      <div className='startContentMiddleMiddle'>
-        <div className='startContentMiddleDiv'>
-          <input type="text" className='textInput' ref={(input) => props.handleInput(input)} placeholder="Enter Url" required/>
-        </div>
-      </div>
-      <div className='startContentMiddleRight'></div>
-    </div>
-  )
-}
-
-const StartContentBottom = () => {
-  return (
-    <div className='startContentBottom'>
-      <button type="submit" className='button' id='enterUrl'>Start</button>
-    </div>
-  )
-}
-
-const StartContentStatus = (props) => {
-  return (
-    <div className='startContentStatus'>
-      {props.status}
-    </div>
-  )
-}
-
-const StartContentPending = () => {
-  return (
-    <h3 className='urlStatus' id='urlStatusPending'>
-      Thinking.
-    </h3>
-  )
-}
-
-const StartContentError = () => {
-  return (
-    <h3 className='urlStatus' id='urlStatusError'>
-      Url not accepted.
-    </h3>
-  )
-}
-
 class Body extends Component {
   render() {
     const stage = this.props.state.stage
-    if(stage === 'urlNotEntered') {
+    if(stage === 'urlNotAccepted') {
       return (
-        <div className='startContent'>
-          <StartContentTop/>
-          <UrlForm handler={this.props.handler}/>
-        </div>
-      )
-    }
-    else if(stage === 'urlPending'){
-      return (
-        <div className='startContent'>
-          <StartContentTop/>
-          <StartContentStatus status={<StartContentPending/>}/>
-          <UrlForm handler={this.props.handler}/>    
-        </div>
-      )
-    }
-    else if(stage === 'urlNotAccepted'){
-      return (
-        <div className='startContent'>
-          <StartContentTop/>
-          <StartContentStatus status={<StartContentError/>}/>
-          <UrlForm handler={this.props.handler}/>    
-        </div>
+        <StartPage handler={this.props.handler}/>
       )
     }
     else if(stage === 'urlAccepted') {
@@ -302,45 +205,16 @@ class App extends Component {
     this.handler = this.handler.bind(this)
     this.confirmLines = this.confirmLines.bind(this)
     this.rejectLines = this.rejectLines.bind(this)
-    this.state = {stage: 'urlNotEntered'}
+    this.state = {stage: 'urlNotAccepted'}
   }
-
-  callApi = async (props) => {
-    try {
-      console.log('Api props: ' + props)
-
-      this.setState({
-        stage: 'urlPending'
-      })
-
-      const response = await fetch('/url/' + props);
-      const body = await response.json();
-
-      if (response.status == 200) {
-        console.log(body)
-        console.log('Title candidates scraped from Url: ' + Object.keys(body['titleCandidates']).length)
-        console.log('Lines scraped from Url: ' + body['lines'].length)
-    
-        this.setState({
-          titleCandidates: body['titleCandidates'],
-          lines: body['lines'],
-          stage: 'urlAccepted'
-        })
-      }
-    } catch(err) {
-      this.setState({
-        stage: 'urlNotAccepted'
-      })
-    }
-  };
   
   handler(e, props) {
-    if(e === 'urlRequested') {
-      console.log('Url requested: ' + props)
-      let formattedUrl = props.replace(/https?:\/\//, '')
-      formattedUrl = formattedUrl.replace(/\//g, ' ')
-      console.log('Formatted Url: ' + formattedUrl)  
-      this.callApi(formattedUrl)
+    if(e === 'urlAccepted') {
+      this.setState({
+        titleCandidates: props['titleCandidates'],
+        lines: props['lines'],
+        stage: 'urlAccepted'
+      })
     }
     if(e === 'lineRadioSelected' && this.state.stage === 'urlAccepted') {
       console.log('Line selected: ' + props)
