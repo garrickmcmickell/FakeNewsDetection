@@ -1,39 +1,15 @@
 import React, { Component } from 'react';
 import StartPage from './Views/StartPage'
+import TitleSelect from './Views/TitleSelect'
 import './Styles/App.css';
 
-class LineRadio extends Component {
-  constructor(props) {
-    super(props)
-    this.state = {
-    	line: props.text,
-      isToggleOn: false
-    }
-  }
 
-  handleChange = (event) => {
-    this.setState(prevState => ({
-      isToggleOn: !prevState.isToggleOn
-    }));
-    this.props.handler('lineRadioSelected', this.state.line)
-  }
-
-  render() {
-    return (
-      <label className="lineRadioContainer">
-        {this.state.line}
-        <input onChange={this.handleChange} type="radio" name='radio'/>
-        <span className="lineRadioCheckmark"></span>
-      </label>
-    )
-  }
-}
 
 class LineButton extends Component {
   constructor(props) {
     super(props)
     this.state = {
-    	text: props.text,
+    	line: props.line,
       isToggleOn: props.toggle ? true : false,
       style: props.toggle ? this.selected : this.notSelected
     }
@@ -72,7 +48,10 @@ class LineButton extends Component {
       })
     }
     console.log('line')
-    this.props.handler('lineSelected', [this.state.text, this.state.isToggleOn])
+    this.props.handler({
+      index: this.props.index, 
+      text: this.state.text, 
+      remove: this.state.isToggleOn})
   }
 
   render() {
@@ -92,63 +71,51 @@ const LineButtonList = (props) => {
     <div>
       {props.lines.map(line => {
         if(props.selectedLines.includes(line)) 
-          return <LineButton key={'line' + i++} handler={props.handler} text={line} toggle={true}/>
+          return <LineButton key={'line' + i} index={i++} handler={props.handler} line={line} toggle={true}/>
         else
-          return <LineButton key={'line' + i++} handler={props.handler} text={line}/>
+          return <LineButton key={'line' + i} index={i++} handler={props.handler} line={line}/>
       }
     )}
     </div>
   )
 }
 
-const LineRadioList = (props) => {
-  let i = 0
-  return (
-    <div>
-      {props.lines.map(line => <LineRadio key={'line' + i++} handler={props.handler} name={props.name} text={line}/>)}
-    </div>
-  )
-}
 
-class ArticleListForm extends Component {
-  handleSubmit = (event) => {
+
+const ArticleListForm = (props) => {
+  console.log(props.selectedLines)
+  const selectedLines = props.selectedLines
+  console.log(selectedLines)
+
+  const lineHandler = (props) => {    
+    if(!props.remove)
+      selectedLines.push({
+        index: props.index, 
+        text: props.text
+      })
+    else
+      selectedLines.splice(props.index - 1, 1)
+    
+    selectedLines.sort((a, b) => {
+      return a.index - b.index 
+    })
+  }
+  
+  const handleSubmit = (event) => {
     event.preventDefault()
-    this.props.handler('linesSelected')
+    props.handler('linesSelected', selectedLines)
   }
 
-  render() {
     return (      
-      <form onSubmit={this.handleSubmit}>
-        <LineButtonList handler={this.props.handler} lines={this.props.lines} selectedLines={this.props.selectedLines}/>
+      <form onSubmit={handleSubmit}>
+        <LineButtonList handler={lineHandler} lines={props.lines} selectedLines={props.selectedLines}/>
         <button type="submit" className='button'>Select Lines</button>
       </form>
     )
-  }
+
 }
 
-class TitleListForm extends Component {
-  handleSubmit = (event) => {
-    event.preventDefault()
-    this.props.handler('titleSelected')
-  }
 
-  render() {
-    const titleList = Object.entries(this.props.titleCandidates).map(value => {
-      return (
-        <div key={'divForlineList' + value[0]}>        
-          <h2>Rank {value[0]}</h2>
-          <LineRadioList key={'lineList' + value[0]} handler={this.props.handler} name='titles' lines={value[1]}/>
-        </div>
-      )
-    })
-    return (
-      <form onSubmit={this.handleSubmit}>
-          {titleList}
-          <button type="Submit" className='button'>Select Title</button>
-      </form>
-    )
-  }
-}
 
 class Banner extends Component {
 	render() {
@@ -178,16 +145,13 @@ const Body = (props) => {
     }
     else if(stage === 'urlAccepted') {
       return (
-        <div>
-          <h1>Select Title</h1>
-          <TitleListForm handler={props.handler} titleCandidates={props.state.titleCandidates}/>
-        </div>
+        <TitleSelect handler={props.handler} titleCandidates={props.state.titleCandidates}/>
       )
     } 
     else if(stage === 'titleSelected' || stage === 'linesRejected') {
       return (
         <div>
-          <h1>{props.state.title}</h1>
+          <h1>{props.state.titleContent}</h1>
           <ArticleListForm handler={props.handler} lines={props.state.lines} selectedLines={props.state.selectedLines}/>
         </div>
       )
@@ -196,7 +160,7 @@ const Body = (props) => {
       return (
         <div>
           <h1>{props.state.title}</h1>
-          {props.state.selectedLines.map((line, index) => <p key={'line' + index}>{line}</p>)}
+          {props.state.selectedLines.map((line, index) => <p key={'line' + index}>{line.text}</p>)}
           <h3>Is this right?</h3>
           <button onClick={confirmLines} type='button' className='button'>Yes</button>
           <button onClick={rejectLines} type='button' className='button'>No</button>
@@ -226,18 +190,14 @@ class App extends Component {
         stage: 'urlAccepted'
       })
     }
-    if(e === 'lineRadioSelected' && this.state.stage === 'urlAccepted') {
-      console.log('Line selected: ' + props)
-      this.setState({
-        title: props
-      })
-    }
     if(e === 'titleSelected') {
-      console.log('Title selected :' + this.state.title)
-      console.log('Index of title: '+ this.state.lines.indexOf(this.state.title))
-      this.state.lines.splice(0, this.state.lines.indexOf(this.state.title) + 1)
+      console.log('Title selected :' + props.content)
+      console.log('Index of title: '+ props.index)
+      this.state.lines.splice(0, props.index + 1)
       this.setState({
-        stage: e,
+        stage: 'titleSelected',
+        titleContent: props.content,
+        titleIndex: props.index,
         selectedLines: []
       })
     }
@@ -260,8 +220,10 @@ class App extends Component {
       }
     }
     if(e === 'linesSelected') {
+      console.log(props)
       this.setState({
-        stage: e
+        stage: e,
+        selectedLines: props.sort((a, b) => { return a.index - b.index })
       })
     }
     if(e === 'linesRejected') {
