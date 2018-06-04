@@ -1,10 +1,10 @@
-import React, { Component } from 'react';
+import React, { Component } from 'react'
 import StartPage from './Views/StartPage'
 import TitleSelect from './Views/TitleSelect'
-import LineSelect from './Views/LineSelect';
-import ConfirmPage from './Views/ConfirmPage';
-import './Styles/App.css';
-
+import LineSelect from './Views/LineSelect'
+import ConfirmPage from './Views/ConfirmPage'
+import ClassifierSelect from './Views/ClassifierSelect'
+import './Styles/App.css'
 
 const Banner = () => {
   return (
@@ -17,32 +17,36 @@ const Banner = () => {
 const Body = (props) => {
   const stage = props.state.stage
 
-    if(stage === 'urlNotAccepted') {
-      return (
-        <StartPage handler={props.handler}/>
-      )
-    }
-    else if(stage === 'urlAccepted') {
-      return (
-        <TitleSelect handler={props.handler} titleCandidates={props.state.titleCandidates}/>
-      )
-    } 
-    else if(stage === 'titleSelected' || stage === 'linesRejected') {
-      return (
-        <LineSelect handler={props.handler} titleContent={props.state.titleContent} lines={props.state.lines} selectedLines={props.state.selectedLines}/>
-      )
-    }
-    else if(stage === 'linesSelected') {
-      return (
-        <ConfirmPage handler={props.handler} titleContent={props.state.titleContent} selectedLines={props.state.selectedLines}/>
-      )
-    }
-    else {
-      return (
-        <h1>Article accepted</h1>
-      )
-    }
-
+  if(stage === 'urlNotAccepted') {
+    return (
+      <StartPage handler={props.handler}/>
+    )
+  }
+  else if(stage === 'urlAccepted') {
+    return (
+      <TitleSelect handler={props.handler} titleCandidates={props.state.titleCandidates}/>
+    )
+  } 
+  else if(stage === 'titleSelected' || stage === 'linesRejected') {
+    return (
+      <LineSelect handler={props.handler} titleContent={props.state.titleContent} lines={props.state.lines} selectedLines={props.state.selectedLines}/>
+    )
+  }
+  else if(stage === 'linesSelected') {
+    return (
+      <ConfirmPage handler={props.handler} titleContent={props.state.titleContent} selectedLines={props.state.selectedLines}/>
+    )
+  }
+  else if(stage === 'linesAccepted') {
+    return (
+      <ClassifierSelect handler={props.handler}/>
+    )
+  }
+  else {
+    return (
+      <h1>Article accepted</h1>
+    )
+  }
 }
 
 class App extends Component {
@@ -70,15 +74,24 @@ class App extends Component {
       })
     }
     if(e === 'linesSelected') {
-      console.log(props)
       this.setState({
         stage: 'linesSelected',
         selectedLines: props.sort((a, b) => { return a.index - b.index })
       })
     }
+    if(e === 'linesAccepted') {
+      this.setState({
+        stage: 'linesAccepted'
+      })
+    }
     if(e === 'linesRejected') {
       this.setState({
         stage: 'linesRejected'
+      })
+    }
+    if(e === 'classifierSelected') {
+      this.setState({
+        stage: 'classifierSelected'
       })
     }
   }

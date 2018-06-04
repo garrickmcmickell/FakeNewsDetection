@@ -1,8 +1,8 @@
-import React from 'react';
+import React from 'react'
 
 const ConfirmPage = (props) => {
   const confirmLines = () => {
-    props.handler('linesConfirmed')
+    props.handler('linesAccepted')
   }
 
   const rejectLines = () => {

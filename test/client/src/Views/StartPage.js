@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component } from 'react'
 
 const TopText = () => {
   return (    
@@ -91,7 +91,7 @@ class StartPage extends Component {
       const response = await fetch('/url/' + requestedUrl);
       const body = await response.json();
 
-      if (response.status == 200 && !body.code) 
+      if (response.status === 200 && !body.code) 
         this.props.handler('urlAccepted', body)
       else
         this.setState({ status: <Status status={<Error/>}/> })
