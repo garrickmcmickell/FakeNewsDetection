@@ -3,13 +3,11 @@ import StartPage from './Views/StartPage'
 import TitleSelect from './Views/TitleSelect'
 import './Styles/App.css';
 
-
-
 class LineButton extends Component {
   constructor(props) {
     super(props)
     this.state = {
-    	line: props.line,
+    	text: props.text,
       isToggleOn: props.toggle ? true : false,
       style: props.toggle ? this.selected : this.notSelected
     }
@@ -34,24 +32,12 @@ class LineButton extends Component {
   }
 
   handleClick = (event) => {
-    this.setState(prevState => ({
-      isToggleOn: !prevState.isToggleOn
-    }));
-    if(this.state.isToggleOn) {
-      this.setState({
-        style: this.notSelected
-      })
-    }
-    else {
-      this.setState({
-        style: this.selected
-      })
-    }
-    console.log('line')
-    this.props.handler({
-      index: this.props.index, 
-      text: this.state.text, 
-      remove: this.state.isToggleOn})
+    this.setState(prevState => ({ isToggleOn: !prevState.isToggleOn }))
+    
+    if(this.state.isToggleOn) this.setState({ style: this.notSelected })
+    else this.setState({ style: this.selected })
+
+    this.props.handler({ index: this.props.index, text: this.state.text, remove: this.state.isToggleOn})
   }
 
   render() {
@@ -69,18 +55,16 @@ const LineButtonList = (props) => {
   let i = 0;
   return (
     <div>
-      {props.lines.map(line => {
-        if(props.selectedLines.includes(line)) 
-          return <LineButton key={'line' + i} index={i++} handler={props.handler} line={line} toggle={true}/>
+      {props.lines.map((line, index) => {
+        if(props.selectedLines.some(line => line.index === index)) 
+          return <LineButton key={'line' + i} index={i++} handler={props.handler} text={line} toggle={true}/>
         else
-          return <LineButton key={'line' + i} index={i++} handler={props.handler} line={line}/>
+          return <LineButton key={'line' + i} index={i++} handler={props.handler} text={line}/>
       }
     )}
     </div>
   )
 }
-
-
 
 const ArticleListForm = (props) => {
   console.log(props.selectedLines)
@@ -89,12 +73,9 @@ const ArticleListForm = (props) => {
 
   const lineHandler = (props) => {    
     if(!props.remove)
-      selectedLines.push({
-        index: props.index, 
-        text: props.text
-      })
+      selectedLines.push({ index: props.index, text: props.text })
     else
-      selectedLines.splice(props.index - 1, 1)
+      selectedLines.splice(selectedLines.findIndex(line => line.index === props.index), 1)
     
     selectedLines.sort((a, b) => {
       return a.index - b.index 
@@ -112,7 +93,6 @@ const ArticleListForm = (props) => {
         <button type="submit" className='button'>Select Lines</button>
       </form>
     )
-
 }
 
 
@@ -149,6 +129,7 @@ const Body = (props) => {
       )
     } 
     else if(stage === 'titleSelected' || stage === 'linesRejected') {
+      console.log(props)
       return (
         <div>
           <h1>{props.state.titleContent}</h1>
