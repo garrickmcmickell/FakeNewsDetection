@@ -11,7 +11,7 @@ const url = "mongodb://localhost:27017/"
 Request('http://www.collective-evolution.com/2016/10/18/15-quotes-on-false-flag-terrorism-the-secret-government-that-will-make-you-rethink-your-patriotism/', function(error, response, body) {
   console.log('error:', error);
   console.log('statusCode:', response && response.statusCode);
-  var params = {
+  const params = {
     linkProcess: function(href, linkText) {
       return ' ' + linkText
     },
@@ -21,7 +21,7 @@ Request('http://www.collective-evolution.com/2016/10/18/15-quotes-on-false-flag-
     headingStyle: 'hashify',
     listStyle: 'linebreak'
   }
-  var test = TextVersion(body, params)
+  let test = TextVersion(body, params)
   
   test = test.replace(/<a.*?>(.*?)<\/a>\s?\n?/gmi, (sel, cont) => {
     if(cont.length) return (cont + '\n')
@@ -33,17 +33,18 @@ Request('http://www.collective-evolution.com/2016/10/18/15-quotes-on-false-flag-
   test = test.replace(/<h([^a-z]).*?>/gmi, '')
   test = test.replace(/<\/h([^a-z]).*?>/gmi, '')
   
-  const titleCandidates = {}
-  test = test.replace(/^(#+?)\s+(.*?)\s*?\n/gmi, (sel, head, cont) => {
-    titleCandidates[head.length] ?
-      titleCandidates[head.length].push(he.decode(cont)) :
-      titleCandidates[head.length] = [he.decode(cont)]
-    return cont
-  })
-  
   const lines = []
   test.match(/.*?\n/gm).forEach(line => {
     if(line != '\n') lines.push(he.decode(line).trim())
+  })
+
+  const titleCandidates = {}
+  lines.forEach((line, index) => {
+    lines[index] = line.replace(/^(#+?)\s+(.*)/, (sel, head, cont) => {
+      const titleCandidate = { index: index, content: cont }
+      titleCandidates[head.length] ? titleCandidates[head.length].push(titleCandidate) : titleCandidates[head.length] = [titleCandidate]
+      return cont
+    })
   })
 
   console.log()

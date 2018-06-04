@@ -39,7 +39,7 @@ function getLinesFromUrl(url, callback) {
       callback(error, null)
     }
     else {
-      var params = {
+      const params = {
         linkProcess: function(href, linkText) {
           return ' ' + linkText
         },
@@ -49,7 +49,7 @@ function getLinesFromUrl(url, callback) {
         headingStyle: 'hashify',
         listStyle: 'linebreak'
       }
-      var test = TextVersion(body, params)
+      let test = TextVersion(body, params)
       
       test = test.replace(/<a.*?>(.*?)<\/a>\s?\n?/gmi, (sel, cont) => {
         if(cont.length) return (cont + '\n')
@@ -58,20 +58,22 @@ function getLinesFromUrl(url, callback) {
       test = test.replace(/^<h([^a-z]).*?>/gmi, (sel, type) => {
         return '#'.repeat(parseInt(type)) + ' '
       })
+      
       test = test.replace(/<h([^a-z]).*?>/gmi, '')
       test = test.replace(/<\/h([^a-z]).*?>/gmi, '')
-      
-      const titleCandidates = {}
-      test = test.replace(/^(#+?)\s+(.*?)\s*?\n/gmi, (sel, head, cont) => {
-        titleCandidates[head.length] ?
-          titleCandidates[head.length].push(he.decode(cont)) :
-          titleCandidates[head.length] = [he.decode(cont)]
-        return cont
-      })
       
       const lines = []
       test.match(/.*?\n/gm).forEach(line => {
         if(line != '\n') lines.push(he.decode(line).trim())
+      })
+
+      const titleCandidates = {}
+      lines.forEach((line, index) => {
+        lines[index] = line.replace(/^(#+?)\s+(.*)/, (sel, head, cont) => {
+          const titleCandidate = { index: index, content: cont }
+          titleCandidates[head.length] ? titleCandidates[head.length].push(titleCandidate) : titleCandidates[head.length] = [titleCandidate]
+          return cont
+        })
       })
     
       callback(null, { titleCandidates: titleCandidates, lines: lines })
