@@ -29,6 +29,5 @@
 html {
   background: url(https://images.pexels.com/photos/177557/pexels-photo-177557.jpeg) no-repeat center center fixed;
   background-size: cover;
-  overflow-y: hidden;
-  overflow-x: scroll;
+  overflow: auto;
 }

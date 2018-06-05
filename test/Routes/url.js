@@ -20,7 +20,7 @@ router.get('/:url', (req, res) => {
       res.send(result)
     }
   })
-});
+})
 
 // http://www.collective-evolution.com/2016/10/18/15-quotes-on-false-flag-terrorism-the-secret-government-that-will-make-you-rethink-your-patriotism/
 function getLinesFromUrl(url, callback) {
