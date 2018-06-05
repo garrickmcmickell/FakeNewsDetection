@@ -8,48 +8,9 @@ const props = new CoreNLP.Properties({ annotators: 'tokenize,ssplit,pos,parse' }
 const pipeline = new CoreNLP.Pipeline(props, 'English') 
 const url = "mongodb://localhost:27017/"
 
-Request('http://www.collective-evolution.com/2016/10/18/15-quotes-on-false-flag-terrorism-the-secret-government-that-will-make-you-rethink-your-patriotism/', function(error, response, body) {
-  console.log('error:', error);
-  console.log('statusCode:', response && response.statusCode);
-  const params = {
-    linkProcess: function(href, linkText) {
-      return ' ' + linkText
-    },
-    imgProcess: function(src, alt) {
-      return ''
-    },
-    headingStyle: 'hashify',
-    listStyle: 'linebreak'
-  }
-  let test = TextVersion(body, params)
-  
-  test = test.replace(/<a.*?>(.*?)<\/a>\s?\n?/gmi, (sel, cont) => {
-    if(cont.length) return (cont + '\n')
-    else return '\n'
-  })
-  test = test.replace(/^<h([^a-z]).*?>/gmi, (sel, type) => {
-    return '#'.repeat(parseInt(type)) + ' '
-  })
-  test = test.replace(/<h([^a-z]).*?>/gmi, '')
-  test = test.replace(/<\/h([^a-z]).*?>/gmi, '')
-  
-  const lines = []
-  test.match(/.*?\n/gm).forEach(line => {
-    if(line != '\n') lines.push(he.decode(line).trim())
-  })
-
-  const titleCandidates = {}
-  lines.forEach((line, index) => {
-    lines[index] = line.replace(/^(#+?)\s+(.*)/, (sel, head, cont) => {
-      const titleCandidate = { index: index, content: cont }
-      titleCandidates[head.length] ? titleCandidates[head.length].push(titleCandidate) : titleCandidates[head.length] = [titleCandidate]
-      return cont
-    })
-  })
-
-  console.log()
-})
-
+const test = JSON.parse('{"pos":"DOC","children":[{"pos":"PARA","children":[{"children":[{"children":[{"children":[{"children":[],"pos":"JJ","word":"Blood-Splattered"},{"children":[],"pos":"NNP","word":"Joe"},{"children":[],"pos":"NNP","word":"Arpaio"},{"children":[],"pos":"NNS","word":"Calls"}],"pos":"NP"},{"children":[{"children":[{"children":[{"children":[],"pos":"NNP","word":"Trump"}],"pos":"NP"},{"children":[{"children":[],"pos":"TO","word":"To"},{"children":[{"children":[],"pos":"VB","word":"Tell"},{"children":[{"children":[],"pos":"PRP","word":"Him"}],"pos":"NP"},{"children":[{"children":[],"pos":"PRP","word":"He"}],"pos":"NP"}],"pos":"VP"}],"pos":"VP"}],"pos":"S"}],"pos":"SBAR"}],"pos":"NP"},{"children":[{"children":[],"pos":"VBZ","word":"\'s"},{"children":[{"children":[],"pos":"VBG","word":"Going"},{"children":[{"children":[{"children":[],"pos":"TO","word":"To"},{"children":[{"children":[],"pos":"VB","word":"Need"},{"children":[{"children":[],"pos":"DT","word":"Another"},{"children":[],"pos":"NN","word":"Half"},{"children":[],"pos":"NNP","word":"Dozen"},{"children":[],"pos":"NNP","word":"Pardons"}],"pos":"NP"}],"pos":"VP"}],"pos":"VP"}],"pos":"S"}],"pos":"VP"}],"pos":"VP"}],"pos":"S"}]}]}')
+phraseChainChunker(test)
+console.log()
 
  
   //Post-order depth-first search. Passes array of branch strings upwards,
@@ -62,15 +23,15 @@ Request('http://www.collective-evolution.com/2016/10/18/15-quotes-on-false-flag-
   function phraseChainChunker(node, phraseChains = []) {
     var arr = []    
   
-    node.children().forEach(child => {
+    node.children.forEach(child => {
       phraseChainChunker(child, phraseChains).forEach(value => arr.push(value))
     })
 
     arr.forEach(value => {
-      arr.unshift('[' + node.pos() + arr[arr.length - 1] + ']'), arr.pop()
+      arr.unshift('[' + node.pos + arr[arr.length - 1] + ']'), arr.pop()
     })
 
-    arr.push('[' + node.pos() + ']')
+    arr.push('[' + node.pos + ']')
     arr.forEach(phraseChain => phraseChains.push(phraseChain))
     return arr
   }

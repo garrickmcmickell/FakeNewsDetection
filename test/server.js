@@ -13,28 +13,7 @@ app.use('/', routes)
 
 app.listen(port, () => console.log(`Listening on port ${port}`));
  
-  //Post-order depth-first search. Passes array of branch strings upwards,
-  //starting at the leaf. Nodes construct strings by using current node and
-  //appening all sub-tree branches in passed array, adding them to beginning
-  //of the array, popping the sub-tree branch off of the array, pushing itself
-  //on to array, and passing the array up to the parent for use in same process.
-  //Result is an array of strings of all contained combinations of phrase chunks
-  //for the given tree. 
-  function phraseChainChunker(node, phraseChains = []) {
-    var arr = []    
-  
-    node.children().forEach(child => {
-      phraseChainChunker(child, phraseChains).forEach(value => arr.push(value))
-    })
 
-    arr.forEach(value => {
-      arr.unshift('[' + node.pos() + arr[arr.length - 1] + ']'), arr.pop()
-    })
-
-    arr.push('[' + node.pos() + ']')
-    arr.forEach(phraseChain => phraseChains.push(phraseChain))
-    return arr
-  }
 
   //Counts node parts-of-speech and parent-child parts of speech, which
   //are saved by key in an object.
