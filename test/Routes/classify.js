@@ -18,8 +18,20 @@ module.exports = (req, res) => {
 }
 
 function classifyDocument(document, callback) {
-  saveAsPlain(document, callback)
-  savePhraseChunks(document, callback)
+  var plainSaved = false
+  var phraseSaved = false
+  var error = null
+
+  const saveCallback = (err, result) => {
+    if(result === 'plainSaved') plainSaved = true
+    if(result === 'phraseSaved') phraseSaved = true
+    if(err) error = err
+  }
+  saveAsPlain(document, saveCallback)
+  savePhraseChunks(document, saveCallback)
+
+  if(plainSaved && phraseSaved) callback(null, 'articleSaved')
+  else callback(error, null)
 }
 
 function saveAsPlain(document, callback) {
@@ -29,7 +41,7 @@ function saveAsPlain(document, callback) {
     const coll = dbo.collection('articlePlain')
     coll.insertOne(document, function(err, res) {
       if(err) callback(err, null)
-      else callback(null, 'Document inserted')
+      else callback(null, 'plainInserted')
       db.close()
     })
   })
@@ -47,7 +59,7 @@ async function savePhraseChunks(document, callback) {
     const coll = dbo.collection('articlePhraseChunked')
     coll.insertOne(doc, function(err, res) {
       if(err) callback(err, null)
-      else callback(null, 'Document inserted')
+      else callback(null, 'phraseInserted')
       db.close()
     })
   })
