@@ -1,88 +1,17 @@
-const he = require('he')
 const express = require('express')
-const Request = require('request')
-const CoreNLP = require('corenlp')
-var TextVersion = require("textversionjs");
-const MongoClient = require('mongodb').MongoClient
-
-const props = new CoreNLP.Properties({ annotators: 'tokenize,ssplit,pos,parse' })
-const pipeline = new CoreNLP.Pipeline(props, 'English') 
-const url = "mongodb://localhost:27017/"
+const bodyParser = require('body-parser');
 
 const app = express()
 const port = process.env.PORT || 5000;
 
-app.get('/url/:url', (req, res) => {
-  console.log('Url API hit')
-  console.log('Url received: ' + req.params.url)
-  const url = 'http://' + req.params.url.replace(/ /g, '/')
-  console.log('Url recieved formatted: ' + url)
-  getLinesFromUrl(url, function(err, result) {
-    if (err) {
-      console.log(err)
-      res.send(err)
-    }
-    else {
-      console.log('Lines grabbed from URL: ' + result.lines.length)
-      res.send(result)
-    }
-  })
-});
+const routes = require('./Routes')
+
+app.use(bodyParser.urlencoded({ extended: true }))
+app.use(bodyParser.json())
+
+app.use('/', routes)
 
 app.listen(port, () => console.log(`Listening on port ${port}`));
-
-// http://www.collective-evolution.com/2016/10/18/15-quotes-on-false-flag-terrorism-the-secret-government-that-will-make-you-rethink-your-patriotism/
-function getLinesFromUrl(url, callback) {
-  console.log('URL requested: ' + url)
-  Request(url, function(error, response, body) {
-    if(error) {
-      callback(error, null)
-    }
-    else {
-      const params = {
-        linkProcess: function(href, linkText) {
-          return ' ' + linkText
-        },
-        imgProcess: function(src, alt) {
-          return ''
-        },
-        headingStyle: 'hashify',
-        listStyle: 'linebreak'
-      }
-      let test = TextVersion(body, params)
-      
-      test = test.replace(/<a.*?>(.*?)<\/a>\s?\n?/gmi, (sel, cont) => {
-        if(cont.length) return (cont + '\n')
-        else return '\n'
-      })
-      test = test.replace(/^<h([^a-z]).*?>/gmi, (sel, type) => {
-        return '#'.repeat(parseInt(type)) + ' '
-      })
-      
-      test = test.replace(/<h([^a-z]).*?>/gmi, '')
-      test = test.replace(/<\/h([^a-z]).*?>/gmi, '')
-      
-      const lines = []
-      test.match(/.*?\n/gm).forEach(line => {
-        if(line != '\n') lines.push(he.decode(line).trim())
-      })
-
-      const titleCandidates = {}
-      lines.forEach((line, index) => {
-        lines[index] = line.replace(/^(#+?)\s+(.*)/, (sel, head, cont) => {
-          const titleCandidate = { index: index, content: cont }
-          titleCandidates[head.length] ? titleCandidates[head.length].push(titleCandidate) : titleCandidates[head.length] = [titleCandidate]
-          return cont
-        })
-      })
-    
-      callback(null, { titleCandidates: titleCandidates, lines: lines })
-    }
-  })
-}
-
-
-
  
   //Post-order depth-first search. Passes array of branch strings upwards,
   //starting at the leaf. Nodes construct strings by using current node and

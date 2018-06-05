@@ -39,7 +39,7 @@ const Body = (props) => {
   }
   else if(stage === 'linesAccepted') {
     return (
-      <ClassifierSelect handler={props.handler}/>
+      <ClassifierSelect handler={props.handler} titleContent={props.state.titleContent} selectedLines={props.state.selectedLines}/>
     )
   }
   else {
