@@ -13,8 +13,6 @@ const ClassifierSelect = (props) => {
         classifier: classifier
       }))
 
-      //const response = await fetch('/classify');
-
       fetch('/classify/', {
         method: 'POST',
         body: JSON.stringify({
@@ -27,12 +25,6 @@ const ClassifierSelect = (props) => {
       .then(function(response) {
         console.log(response)
       })
-      //const body = await response.json();
-
-      //if (response.status === 200) 
-      //  console.log('Post success')
-      //else
-      //  console.log('Post fail')
     }
     catch(err) {
       console.log('Post fail')
@@ -54,8 +46,8 @@ const ClassifierSelect = (props) => {
       <select onChange={handleChange}>
         <option value='default'>---</option>
         <option value='straight'>Just News</option>
-        <option value='editorial'>Editorial Content</option>
-        <option value='cherry'>Cherry-Picked Facts</option>
+        <option value='potential_bias'>Potentially Biased News</option>
+        <option value='probable_bias'>Probably Biased News</option>
         <option value='fake'>Fake News</option>
         <option value='satire'>Satire</option>
       </select>
