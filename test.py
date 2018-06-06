@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 import logging
+import random
 import numpy as np
 from optparse import OptionParser
 import sys
@@ -33,6 +34,9 @@ logging.basicConfig(level=logging.INFO,
 
 # parse commandline arguments
 op = OptionParser()
+op.add_option('--random',
+              action='store', type='int', dest='num_samples',
+              help='Select n random test samples.')
 op.add_option("--report",
               action="store_true", dest="print_report",
               help="Print a detailed classification report.")
@@ -70,39 +74,46 @@ print()
 # #############################################################################
 # My code
 
+#Names of classifiers saved to array for retreival, normalization, and idendification after normalization
+classifiers = ['straight', 'editorial', 'cherry', 'fake', 'satire']
+real_target_names = ['straight', 'editorial', 'cherry']
+fake_target_names = ['fake', 'satire']
 target_names = ['real', 'fake']
 
 #Connect to MongoDB
 client = MongoClient(port=27017)
-db = client.phraseChunk
+db = client.classifiedArticles
 
-#Query and format training data for real samples
-train_real = np.array([np.array([[item[key][i].encode('ascii', 'ignore') for i in range(len(item[key]))], 0])
-                      for query in [db['train' + str(i + 1)].find({}) if i != 0 else db.train.find({}) for i in range(4)]
-                      for item in query
-                      for key in item if key != u'_id'])
+#Query data by classifier
+queries = [db.articlePhraseChunked.find({'classifier': classifier}) for classifier in classifiers]
 
-#Query and format training data for fake samples
-train_fake = np.array([np.array([[item[key][i].encode('ascii', 'ignore') for i in range(len(item[key]))], 1])
-                      for query in [db['train' + str(i + 5)].find({}) for i in range(5)]
-                      for item in query
-                      for key in item if key != u'_id'])
+#Format data, normalize classifier
+data = np.array([np.array([[item[key][i].encode('ascii', 'ignore') for i in range(len(item[key]))], 0 if classifier < 3 else 1])
+                for classifier in range(len(queries))
+                for item in queries[classifier]
+                for key in item if key == u'phraseChunks'])
 
-#Query and format test data for real samples
-test_real = np.array([np.array([[item[key][i].encode('ascii', 'ignore') for i in range(len(item[key]))], 0])
-                      for item in db.test1.find({}) 
-                      for key in item if key != u'_id'])
+# #############################################################################
+# Get n random samples from data
+if opts.num_samples:
+  test_indicies = random.sample(range(0, data.shape[0]), opts.num_samples)
+  test = np.array([data[index] for index in test_indicies])
+# #############################################################################
+# Get first of each classifier in data
+else:
+  test = np.array([next(item for item in data if item[1] == classifier) 
+                for classifier in range(len(target_names))])
+  test_indicies = np.array([np.argwhere(data == item)[0][0] for item in test])
+# #############################################################################
 
-#Query and format test data for fake samples
-test_fake = np.array([np.array([[item[key][i].encode('ascii', 'ignore') for i in range(len(item[key]))], 1])
-                      for item in db.test2.find({}) 
-                      for key in item if key != u'_id'])
+#Set train samples as data retrieved without test samples
+train = np.delete(data, test_indicies, 0)
 
-#Made train and test variables
-X_train = np.concatenate((train_real[:, 0], train_fake[:, 0]), axis=0)
-y_train = np.concatenate((train_real[:, 1], train_fake[:, 1]), axis=0).tolist()
-X_test = np.concatenate((test_real[:, 0], test_fake[:, 0]), axis=0)
-y_test = np.concatenate((test_real[:, 1], test_fake[:, 1]), axis=0).tolist()
+#Made train and test variables using train and test samples
+X_train = train[:, 0]
+y_train = train[:, 1].tolist()
+X_test = test[:, 0]
+y_test = test[:, 1].tolist()
 
 # Required function for tokenizing and preprocessing data since it is a list, not raw text.
 def getChunks(sample):
@@ -114,7 +125,8 @@ def getChunks(sample):
 
 print("Extracting features from the training data using a sparse vectorizer")
 t0 = time()
-vectorizer = TfidfVectorizer(analyzer=getChunks, norm='l2', sublinear_tf=True, max_df=0.625)
+vectorizer = TfidfVectorizer(analyzer=getChunks, sublinear_tf=True, max_df=0.5,
+                                 stop_words='english')
 X_train = vectorizer.fit_transform(X_train)
 duration = time() - t0
 print("done in %fs" % duration)
@@ -185,6 +197,9 @@ def benchmark(clf):
     test_time = time() - t0
     print("test time:  %0.3fs" % test_time)
 
+    print('values     :' + str([target_names[index] for index in y_test]))
+    print('predictions:' + str([target_names[index] for index in pred.tolist()]))
+
     score = metrics.accuracy_score(y_test, pred)
     print("accuracy:   %0.3f" % score)
 
@@ -229,7 +244,7 @@ for penalty in ["l2", "l1"]:
     print("%s penalty" % penalty.upper())
     # Train Liblinear model
     results.append(benchmark(LinearSVC(penalty=penalty, dual=False,
-                                       tol=1e-2, C=1.5)))
+                                       tol=1e-3)))
 
     # Train SGD model
     results.append(benchmark(SGDClassifier(alpha=.0001, n_iter=50,
@@ -258,14 +273,14 @@ print("Logistic Regression")
 results.append(benchmark(LogisticRegression(penalty='l1', dual=False, tol=1e-3, solver='saga', C=0.625)))
 
 
-print('=' * 80)
-print("LinearSVC with L1-based feature selection")
-# The smaller C, the stronger the regularization.
-# The more regularization, the more sparsity.
-results.append(benchmark(Pipeline([
-  ('feature_selection', SelectFromModel(LinearSVC(penalty="l1", dual=False,
-                                                  tol=1e-3))),
-  ('classification', LinearSVC(penalty="l2"))])))
+#print('=' * 80)
+#print("LinearSVC with L1-based feature selection")
+## The smaller C, the stronger the regularization.
+## The more regularization, the more sparsity.
+#results.append(benchmark(Pipeline([
+#  ('feature_selection', SelectFromModel(LinearSVC(penalty="l1", dual=False,
+#                                                  tol=1e-3))),
+#  ('classification', LinearSVC(penalty="l2"))])))
 
 # make some plots
 
