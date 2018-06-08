@@ -26,6 +26,9 @@ from sklearn.utils.extmath import density
 from sklearn import metrics
 
 from sklearn.ensemble import VotingClassifier
+from sklearn.pipeline import Pipeline
+
+from sklearn.ensemble import AdaBoostClassifier
 
 import random
 from pymongo import MongoClient
@@ -134,6 +137,11 @@ y_train = np.concatenate((real_data[:, 1], fake_data[:, 1]), axis=0).tolist()
 X_test = np.concatenate((real_test_data[:, 0], fake_test_data[:, 0]), axis=0)
 y_test = np.concatenate((real_test_data[:, 1], fake_test_data[:, 1]), axis=0).tolist()
 
+X_train_vote = X_train
+y_train_vote = y_train
+X_test_vote = X_test
+y_test_vote = y_test 
+
 # Required function for tokenizing and preprocessing data since it is a list, not raw text.
 def getChunks(sample):
   for word in sample:
@@ -146,9 +154,9 @@ if opts.use_hashing:
                                    n_features=opts.n_features)
     X_train = vectorizer.transform(X_train)
 else:
-    #vectorizer = TfidfVectorizer(analyzer=getChunks, sublinear_tf=True, use_idf=False, max_df=0.5, stop_words='english')
-    vectorizer = CountVectorizer(analyzer=getChunks, min_df=1, max_df=6)
-    #vectorizer = TfidfVectorizer(analyzer=getChunks, sublinear_tf=True, min_df=1, max_df=6, stop_words='english')
+    vectorizer = TfidfVectorizer(analyzer=getChunks, sublinear_tf=True, use_idf=False, max_df=0.5)
+    #vectorizer = CountVectorizer(analyzer=getChunks, min_df=1, max_df=6)
+    #vectorizer = TfidfVectorizer(analyzer=getChunks, sublinear_tf=True, min_df=1, max_df=6)
     X_train = vectorizer.fit_transform(X_train)
 duration = time() - t0
 print("done in %fs" %  duration)
@@ -235,12 +243,38 @@ def benchmark(clf):
     clf_descr = str(clf).split('(')[0]
     return clf_descr, score, train_time, test_time
 
+# #############################################################################
+# Benchmark classifiers
+def benchmarkVote(clf):
+    print('_' * 80)
+    print("Training: ")
+    print(clf)
+    t0 = time()
+    clf.fit(X_train_vote, y_train_vote)
+    train_time = time() - t0
+    print("train time: %0.3fs" % train_time)
+
+    t0 = time()
+    pred = clf.predict(X_test_vote)
+    test_time = time() - t0
+    print("test time:  %0.3fs" % test_time)
+
+    score = metrics.accuracy_score(y_test_vote, pred)
+    print("accuracy:   %0.3f" % score)
+
+    if hasattr(clf, 'coef_'):
+        print("dimensionality: %d" % clf.coef_.shape[1])
+        print("density: %f" % density(clf.coef_))
+
+    print()
+    clf_descr = str(clf).split('(')[0]
+    return clf_descr, score, train_time, test_time
 
 results = []
 for clf, name in (
         (RidgeClassifier(tol=1e-2, solver="lsqr"), "Ridge Classifier"),
-        (Perceptron(n_iter=50), "Perceptron"),
-        (PassiveAggressiveClassifier(n_iter=50), "Passive-Aggressive"),
+        (Perceptron(max_iter=50, penalty='l1'), "Perceptron"),
+        (PassiveAggressiveClassifier(max_iter=50), "Passive-Aggressive"),
         (KNeighborsClassifier(n_neighbors=10), "kNN"),
         (RandomForestClassifier(n_estimators=100), "Random forest")):
     print('=' * 80)
@@ -255,13 +289,13 @@ for penalty in ["l2", "l1"]:
                                        tol=1e-3)))
 
     # Train SGD model
-    results.append(benchmark(SGDClassifier(alpha=.0001, n_iter=50,
+    results.append(benchmark(SGDClassifier(alpha=.0001, max_iter=50,
                                            penalty=penalty)))
 
 # Train SGD with Elastic Net penalty
 print('=' * 80)
 print("Elastic-Net penalty")
-results.append(benchmark(SGDClassifier(alpha=.0001, n_iter=50,
+results.append(benchmark(SGDClassifier(alpha=.0001, max_iter=50,
                                        penalty="elasticnet")))
 
 # Train NearestCentroid without threshold
@@ -277,12 +311,39 @@ results.append(benchmark(BernoulliNB(alpha=0.0128125)))
 
 print('=' * 80)
 print("Voting Classifier")
-clf1 = NearestCentroid()
-clf2 = BernoulliNB(alpha=0.0128125)
-clf3 = SGDClassifier(alpha=.0001, n_iter=50, penalty='l1')
-#clf4 = SGDClassifier(alpha=.0001, n_iter=50, penalty='l2')
-#clf5 = NearestCentroid()
-results.append(benchmark(VotingClassifier(estimators=[('NC', clf1), ('BNB', clf2), ('SGD1', clf3)], voting='hard')))
+centroid_pipe = Pipeline([
+  ('cv', CountVectorizer(analyzer=getChunks, min_df=1, max_df=6)),
+  ('ncc', NearestCentroid())
+])
+bernoulli_pipe = Pipeline([
+  ('cv', CountVectorizer(analyzer=getChunks, min_df=1, max_df=6)),
+  ('bnb', BernoulliNB(alpha=0.0128125))
+])
+sgd_pipe = Pipeline([
+  ('tfidf', TfidfVectorizer(analyzer=getChunks, sublinear_tf=True, use_idf=False, max_df=0.5, stop_words='english')),
+  ('sgd', SGDClassifier(alpha=.0001, max_iter=50, penalty='l1'))
+])
+perceptron_pipe = Pipeline([
+  ('tfidf', TfidfVectorizer(analyzer=getChunks, sublinear_tf=True, use_idf=False, max_df=0.5, stop_words='english')),
+  ('pc', Perceptron(max_iter=50, penalty='l1'))
+])
+adaboost_pipe = Pipeline([
+  ('tfidf', TfidfVectorizer(analyzer=getChunks, sublinear_tf=True, use_idf=False, max_df=0.5, stop_words='english')),
+  ('ada', AdaBoostClassifier(n_estimators=100))
+])
+pipes = [
+  ('ncc', centroid_pipe),
+  ('bnb', bernoulli_pipe),
+  ('sgd', sgd_pipe),
+  ('pc', perceptron_pipe),
+  ('ada', adaboost_pipe)
+]
+
+results.append(benchmarkVote(VotingClassifier(estimators=pipes, voting='hard')))
+
+print('=' * 80)
+print("AdaBoost")
+results.append(benchmark(AdaBoostClassifier(n_estimators=100)))
 
 # make some plots
 
