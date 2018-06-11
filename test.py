@@ -29,6 +29,7 @@ from sklearn.ensemble import VotingClassifier
 from sklearn.pipeline import Pipeline
 
 from sklearn.ensemble import AdaBoostClassifier
+from sklearn.tree import DecisionTreeClassifier
 
 import random
 from pymongo import MongoClient
@@ -154,8 +155,8 @@ if opts.use_hashing:
                                    n_features=opts.n_features)
     X_train = vectorizer.transform(X_train)
 else:
-    vectorizer = TfidfVectorizer(analyzer=getChunks, sublinear_tf=True, use_idf=False, max_df=0.5)
-    #vectorizer = CountVectorizer(analyzer=getChunks, min_df=1, max_df=6)
+    #vectorizer = TfidfVectorizer(analyzer=getChunks, sublinear_tf=True, use_idf=False, max_df=0.5)
+    vectorizer = CountVectorizer(analyzer=getChunks)
     #vectorizer = TfidfVectorizer(analyzer=getChunks, sublinear_tf=True, min_df=1, max_df=6)
     X_train = vectorizer.fit_transform(X_train)
 duration = time() - t0
@@ -199,6 +200,37 @@ def trim(s):
     """Trim string to fit on terminal (assuming 80-column display)"""
     return s if len(s) <= 80 else s[:77] + "..."
 
+# #############################################################################
+# Better performing pipelines
+
+centroid_pipe = Pipeline([
+  ('cv', CountVectorizer(analyzer=getChunks, min_df=1, max_df=6)),
+  ('ncc', NearestCentroid())
+])
+bernoulli_pipe = Pipeline([
+  ('cv', CountVectorizer(analyzer=getChunks, min_df=1, max_df=6)),
+  ('bnb', BernoulliNB(alpha=0.0128125))
+])
+sgd_pipe = Pipeline([
+  ('tfidf', TfidfVectorizer(analyzer=getChunks, sublinear_tf=True, use_idf=False, max_df=0.5, stop_words='english')),
+  ('sgd', SGDClassifier(alpha=.0001, max_iter=50, penalty='l1'))
+])
+perceptron_pipe = Pipeline([
+  ('tfidf', TfidfVectorizer(analyzer=getChunks, sublinear_tf=True, use_idf=False, max_df=0.5, stop_words='english')),
+  ('pc', Perceptron(max_iter=50, penalty='l1'))
+])
+adaboost_pipe = Pipeline([
+  ('cv', CountVectorizer(analyzer=getChunks)),
+  ('ada', AdaBoostClassifier(base_estimator=RandomForestClassifier(n_estimators=100), n_estimators=100))
+])
+randomforest_pipe = Pipeline([
+  ('cv', CountVectorizer(analyzer=getChunks)),
+  ('rfc', RandomForestClassifier(n_estimators=100))
+])
+knn_pipeline = Pipeline([
+  ('cv', CountVectorizer(analyzer=getChunks)),
+  ('knn', KNeighborsClassifier(n_neighbors=5))
+])
 
 # #############################################################################
 # Benchmark classifiers
@@ -245,7 +277,7 @@ def benchmark(clf):
 
 # #############################################################################
 # Benchmark classifiers
-def benchmarkVote(clf):
+def benchmarkVote(clf, name):
     print('_' * 80)
     print("Training: ")
     print(clf)
@@ -268,14 +300,13 @@ def benchmarkVote(clf):
 
     print()
     clf_descr = str(clf).split('(')[0]
-    return clf_descr, score, train_time, test_time
+    return name, score, train_time, test_time
 
 results = []
 for clf, name in (
         (RidgeClassifier(tol=1e-2, solver="lsqr"), "Ridge Classifier"),
-        (Perceptron(max_iter=50, penalty='l1'), "Perceptron"),
         (PassiveAggressiveClassifier(max_iter=50), "Passive-Aggressive"),
-        (KNeighborsClassifier(n_neighbors=10), "kNN"),
+        (KNeighborsClassifier(n_neighbors=5), "kNN"),
         (RandomForestClassifier(n_estimators=100), "Random forest")):
     print('=' * 80)
     print(name)
@@ -303,47 +334,55 @@ print('=' * 80)
 print("NearestCentroid (aka Rocchio classifier)")
 results.append(benchmark(NearestCentroid()))
 
-# Train sparse Naive Bayes classifiers
+# Train Knn pipeline
 print('=' * 80)
-print("Naive Bayes")
-#results.append(benchmark(MultinomialNB(alpha=.01)))
-results.append(benchmark(BernoulliNB(alpha=0.0128125)))
+print("KNN Pipeline")
+results.append(benchmarkVote(knn_pipeline, 'KNN Pipeline'))
 
+# Train SGD L1 pipeline
+print('=' * 80)
+print("SGD L1 Pipeline")
+results.append(benchmarkVote(sgd_pipe, 'SGD L1 Pipeline'))
+
+# Train RandomForest pipeline
+print('=' * 80)
+print("RandomForest Pipeline")
+results.append(benchmarkVote(randomforest_pipe, 'RandomForest Pipeline'))
+
+# Train NearestCentroid pipeline
+print('=' * 80)
+print("NearestCentroid Pipeline")
+results.append(benchmarkVote(centroid_pipe, 'NearestCentroid Pipeline'))
+
+# Train Perceptron Pipeline
+print('=' * 80)
+print("Perceptron Pipeline")
+results.append(benchmarkVote(perceptron_pipe, 'Perceptron Pipeline'))
+
+# Train Bernoulli Pipeline
+print('=' * 80)
+print("Bernoulli Naive Bayes Pipeline")
+results.append(benchmarkVote(bernoulli_pipe, 'BernoulliNB Pipeline'))
+
+# Train Voting Classifier
 print('=' * 80)
 print("Voting Classifier")
-centroid_pipe = Pipeline([
-  ('cv', CountVectorizer(analyzer=getChunks, min_df=1, max_df=6)),
-  ('ncc', NearestCentroid())
-])
-bernoulli_pipe = Pipeline([
-  ('cv', CountVectorizer(analyzer=getChunks, min_df=1, max_df=6)),
-  ('bnb', BernoulliNB(alpha=0.0128125))
-])
-sgd_pipe = Pipeline([
-  ('tfidf', TfidfVectorizer(analyzer=getChunks, sublinear_tf=True, use_idf=False, max_df=0.5, stop_words='english')),
-  ('sgd', SGDClassifier(alpha=.0001, max_iter=50, penalty='l1'))
-])
-perceptron_pipe = Pipeline([
-  ('tfidf', TfidfVectorizer(analyzer=getChunks, sublinear_tf=True, use_idf=False, max_df=0.5, stop_words='english')),
-  ('pc', Perceptron(max_iter=50, penalty='l1'))
-])
-adaboost_pipe = Pipeline([
-  ('tfidf', TfidfVectorizer(analyzer=getChunks, sublinear_tf=True, use_idf=False, max_df=0.5, stop_words='english')),
-  ('ada', AdaBoostClassifier(n_estimators=100))
-])
 pipes = [
   ('ncc', centroid_pipe),
   ('bnb', bernoulli_pipe),
   ('sgd', sgd_pipe),
   ('pc', perceptron_pipe),
-  ('ada', adaboost_pipe)
+  #('ada', adaboost_pipe),
+  ('rfc', randomforest_pipe),
+  ('knn', knn_pipeline)
 ]
 
-results.append(benchmarkVote(VotingClassifier(estimators=pipes, voting='hard')))
+results.append(benchmarkVote(VotingClassifier(estimators=pipes, voting='hard'), 'VotingClassifier'))
 
-print('=' * 80)
-print("AdaBoost")
-results.append(benchmark(AdaBoostClassifier(n_estimators=100)))
+# Train AdaBoost Pipeline
+# print('=' * 80)
+# print("AdaBoost")
+# results.append(benchmarkVote(adaboost_pipe, 'AdaBoost Pipeline'))
 
 # make some plots
 

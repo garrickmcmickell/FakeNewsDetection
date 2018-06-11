@@ -138,7 +138,7 @@ if opts.n_components:
     # Vectorizer results are normalized, which makes KMeans behave as
     # spherical k-means for better results. Since LSA/SVD results are
     # not normalized, we have to redo the normalization.
-    svd = TruncatedSVD(opts.n_components)
+    svd = TruncatedSVD()
     normalizer = Normalizer(copy=False)
     lsa = make_pipeline(svd, normalizer)
 

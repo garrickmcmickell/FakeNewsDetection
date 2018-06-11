@@ -116,7 +116,7 @@ def vectorize(X_train, X_test):
   return X_train, X_test
 
 # #############################################################################
-# Function to enchmark classifiers
+# Function to benchmark classifiers
 
 def benchmark(clf, X_train, y_train, X_test, y_test):
   clf.fit(X_train, y_train)
